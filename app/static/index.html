@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Roda da Saúde Integral — Profa. Sheila Ricoy</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            navy: {
+              DEFAULT: '#253B53',
+              dark: '#1A2B3C',
+              light: '#334E6B'
+            },
+            cerulean: {
+              DEFAULT: '#2C6B92',
+              light: '#E7EEF6',
+              dark: '#205170'
+            },
+            amberref: {
+              DEFAULT: '#B58428',
+              light: '#FFF2CD',
+              soft: '#FFF8E7'
+            },
+            slatebg: '#F3F6F9'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #F3F6F9;
+      color: #1E293B;
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+    .score-btn {
+      transition: all 0.15s ease;
+    }
+    .score-btn:hover {
+      transform: translateY(-1px);
+    }
+    @media print {
+      .no-print {
+        display: none !important;
+      }
+      body {
+        background: #ffffff !important;
+      }
+      .print-break {
+        page-break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Top Notification Toast -->
+  <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-md w-full pointer-events-none px-4"></div>
+
+  <!-- Main App Root -->
+  <div id="app-root" class="flex-1 flex flex-col"></div>
+
+  <script src="static/app.js"></script>
+</body>
+</html>
+

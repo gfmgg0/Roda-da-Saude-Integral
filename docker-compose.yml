@@ -1,0 +1,15 @@
+version: "3.9"
+
+services:
+  roda-saude-integral:
+    build: .
+    container_name: roda_saude_integral
+    restart: always
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-roda-da-saude-integral-sheila-ricoy-secret-2026}
+      - DATABASE_URL=sqlite:////app/data/roda_saude_integral.db
+
