@@ -153,13 +153,13 @@ def on_startup():
             wb = openpyxl.load_workbook(DEFAULT_ALUNOS_PATH, data_only=True)
             import_students_from_workbook(wb, db)
 
-        # Ensure Gabriel also has Admin profile
-        gabriel_email = "gabrielmarinhogalvao@gmail.com"
-        gabriel = db.query(User).filter(User.email == gabriel_email).first()
-        if not gabriel:
-            gabriel = User(
-                nome="GABRIEL FERREIRA MARINHO GOMIDE GALVAO",
-                email=gabriel_email,
+        # Ensure secondary Admin account (admin@admin.com) exists
+        sys_admin_email = "admin@admin.com"
+        sys_admin = db.query(User).filter(User.email == sys_admin_email).first()
+        if not sys_admin:
+            sys_admin = User(
+                nome="Administrador Geral",
+                email=sys_admin_email,
                 password_hash=hash_password("123456"),
                 role="admin",
                 ra=None,
@@ -168,11 +168,21 @@ def on_startup():
                 autorizado=True,
                 primeiro_acesso=True,
             )
-            db.add(gabriel)
+            db.add(sys_admin)
             db.commit()
-        elif gabriel.role != "admin" or not gabriel.autorizado:
-            gabriel.role = "admin"
-            gabriel.autorizado = True
+        elif sys_admin.role != "admin" or not sys_admin.autorizado:
+            sys_admin.role = "admin"
+            sys_admin.autorizado = True
+            db.commit()
+
+        # Ensure Gabriel is standard user (padrao)
+        gabriel = db.query(User).filter(User.email == "gabrielmarinhogalvao@gmail.com").first()
+        if gabriel and gabriel.role != "padrao":
+            gabriel.role = "padrao"
+            if not gabriel.turma_id:
+                first_turma = db.query(Turma).first()
+                if first_turma:
+                    gabriel.turma_id = first_turma.id
             db.commit()
     finally:
         db.close()
