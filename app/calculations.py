@@ -4,13 +4,21 @@ from typing import Dict, Any, List, Optional
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_JSON_PATH = os.path.join(BASE_DIR, "questionnaire_data.json")
+COMP_JSON_PATH = os.path.join(BASE_DIR, "competencias_data.json")
 
 with open(DATA_JSON_PATH, "r", encoding="utf-8") as f:
     QUESTIONNAIRE_META = json.load(f)
 
+with open(COMP_JSON_PATH, "r", encoding="utf-8") as f:
+    COMP_META = json.load(f)
+
 QUESTIONS: List[Dict[str, Any]] = QUESTIONNAIRE_META["questions"]
 EIXOS: List[Dict[str, Any]] = QUESTIONNAIRE_META["eixos"]
 TUTORIAL: Dict[str, Any] = QUESTIONNAIRE_META["tutorial"]
+
+COMP_QUESTIONS: List[Dict[str, Any]] = COMP_META["questions"]
+COMP_EIXOS: List[Dict[str, Any]] = COMP_META["eixos"]
+COMP_TUTORIAL: List[Dict[str, Any]] = COMP_META["tutorial"]
 
 VALID_SEM_NOTA = {"Não se aplica", "Prefiro não responder"}
 
@@ -332,4 +340,401 @@ def compute_turma_report(
             "referencia_6": [6 for _ in item_stats],
         },
     }
+
+
+# ---------------------------------------------------------------------------
+# Roda Integrada de Liderança e Competências (Escala 0 a 10, 4 Aplicações)
+# ---------------------------------------------------------------------------
+def evaluate_competencia_item_status(nota: Any, sem_nota: Optional[str]) -> str:
+    """
+    Validates each behavior item in Roda de Liderança e Competências.
+    Excel rule in Autoavaliação!D3:G3: 0 <= nota <= 10 (0 = não demonstro, 5 = alguma regularidade, 10 = consistente).
+    """
+    has_nota = nota is not None and str(nota).strip() != ""
+    sem_nota_clean = (sem_nota or "").strip()
+    has_sem_nota = sem_nota_clean != ""
+
+    if has_nota and has_sem_nota:
+        return "Escolha nota ou motivo"
+    if has_sem_nota:
+        if sem_nota_clean in VALID_SEM_NOTA:
+            return sem_nota_clean
+        return "Nota inválida"
+    if not has_nota:
+        return "Não respondido"
+
+    try:
+        val = float(nota)
+        if val < 0 or val > 10 or (val % 1) != 0:
+            return "Nota inválida"
+        ival = int(val)
+        return "Nota até 6" if ival <= 6 else "Nota acima de 6"
+    except (ValueError, TypeError):
+        return "Nota inválida"
+
+
+def compute_competencias_results(respostas_raw: Dict[str, Any], concluido: bool = False) -> Dict[str, Any]:
+    """
+    Computes the individual report for Roda Integrada de Liderança e Competências
+    following 'Roda integrada', 'Autoavaliação', and 'Critérios'.
+    """
+    items_evaluated = []
+    by_dimension: Dict[str, List[Dict[str, Any]]] = {e["dimensao"]: [] for e in COMP_EIXOS}
+
+    for q in COMP_QUESTIONS:
+        num_str = str(q["numero"])
+        ans = respostas_raw.get(num_str, {}) if isinstance(respostas_raw, dict) else {}
+        raw_nota = ans.get("nota")
+        raw_sem_nota = ans.get("sem_nota")
+
+        situacao = evaluate_competencia_item_status(raw_nota, raw_sem_nota)
+        nota_valida: Optional[int] = int(float(raw_nota)) if situacao in ("Nota até 6", "Nota acima de 6") else None
+
+        rotulo_curto_item = f"{q['numero']:02d} {q['rotulo_radar']}"
+        item_data = {
+            "numero": q["numero"],
+            "dimensao": q["dimensao"],
+            "item": q["rotulo_curto"],
+            "rotulo": rotulo_curto_item,
+            "pergunta": q["pergunta"],
+            "exemplo": q["exemplos"],
+            "revisao": q["rotulo_radar"],
+            "nota": nota_valida,
+            "sem_nota": (raw_sem_nota or "").strip() if situacao in VALID_SEM_NOTA else None,
+            "situacao": situacao,
+        }
+        items_evaluated.append(item_data)
+        by_dimension[q["dimensao"]].append(item_data)
+
+    relatorio_dimensoes = []
+    radar_labels = []
+    radar_values = []
+
+    total_com_nota = 0
+    total_sem_nota = 0
+    soma_todas_notas = 0
+    total_respondidos = 0
+    total_erros = 0
+
+    for eixo in COMP_EIXOS:
+        dim_name = eixo["dimensao"]
+        dim_short = eixo["rotulo_radar"]
+        dim_items = by_dimension.get(dim_name, [])
+
+        com_nota = sum(1 for it in dim_items if it["situacao"] in ("Nota até 6", "Nota acima de 6"))
+        soma_notas = sum(it["nota"] for it in dim_items if it["nota"] is not None)
+        sem_nota_cnt = sum(1 for it in dim_items if it["situacao"] in VALID_SEM_NOTA)
+        erros_cnt = sum(1 for it in dim_items if it["situacao"] in ("Nota inválida", "Escolha nota ou motivo"))
+
+        media_dim: Optional[float] = round(soma_notas / com_nota, 2) if com_nota > 0 else None
+
+        if erros_cnt > 0:
+            preenchimento = "Revise notas"
+        elif (com_nota + sem_nota_cnt) == 5:
+            preenchimento = "Sem notas" if com_nota == 0 else "Concluída"
+        elif com_nota > 0 or sem_nota_cnt > 0:
+            preenchimento = "Em curso"
+        else:
+            preenchimento = "Não iniciada"
+
+        relatorio_dimensoes.append({
+            "ordem": eixo["ordem"],
+            "dimensao": dim_name,
+            "dimensao_curta": dim_short,
+            "o_que_avalia": eixo["temas_origem"],
+            "com_nota": com_nota,
+            "media": media_dim,
+            "sem_nota": sem_nota_cnt,
+            "preenchimento": preenchimento,
+            "revisao": eixo["itens"],
+            "observacao": eixo["foco"],
+        })
+
+        radar_labels.append(dim_short)
+        radar_values.append(media_dim)
+
+        total_com_nota += com_nota
+        total_sem_nota += sem_nota_cnt
+        soma_todas_notas += soma_notas
+        total_respondidos += (com_nota + sem_nota_cnt)
+        total_erros += erros_cnt
+
+    eletrovitae_labels = [it["rotulo"] for it in items_evaluated]
+    eletrovitae_values = [it["nota"] for it in items_evaluated]
+    eletrovitae_ref6 = [6 for _ in items_evaluated]
+
+    media_geral = round(soma_todas_notas / total_com_nota, 2) if total_com_nota > 0 else None
+    mensagem_status = (
+        "Preencha os 50 comportamentos na aba Autoavaliação para liberar o radar e a evolução por eixo."
+        if total_com_nota == 0
+        else f"Notas preenchidas: {total_com_nota} de 50"
+    )
+
+    assuntos_a_explorar = [it for it in items_evaluated if it["situacao"] == "Nota até 6"]
+    assuntos_a_explorar_sorted = sorted(assuntos_a_explorar, key=lambda x: (x["nota"], x["numero"]))
+
+    pontos_fortes = [it for it in items_evaluated if it["situacao"] == "Nota acima de 6"]
+    pontos_fortes_sorted = sorted(pontos_fortes, key=lambda x: (-x["nota"], x["numero"]))
+
+    return {
+        "concluido": concluido,
+        "resumo": {
+            "total_itens": 50,
+            "total_respondidos": total_respondidos,
+            "total_com_nota": total_com_nota,
+            "total_sem_nota": total_sem_nota,
+            "total_pendentes": 50 - total_respondidos,
+            "total_erros": total_erros,
+            "media_geral": media_geral,
+            "mensagem_status": mensagem_status,
+            "total_assuntos_explorar": len(assuntos_a_explorar),
+            "pode_finalizar": (total_respondidos == 50 and total_erros == 0),
+        },
+        "relatorio_dimensoes": relatorio_dimensoes,
+        "roda_radar": {
+            "labels": radar_labels,
+            "values": radar_values,
+            "referencia_6": [6 for _ in radar_labels],
+        },
+        "eletrovitae": {
+            "labels": eletrovitae_labels,
+            "values": eletrovitae_values,
+            "referencia_6": eletrovitae_ref6,
+        },
+        "assuntos_a_explorar": assuntos_a_explorar_sorted,
+        "pontos_fortes": pontos_fortes_sorted,
+        "itens": items_evaluated,
+    }
+
+
+def build_quatro_aplicacoes_table(
+    historico_resumo: List[Dict[str, Any]],
+    resultados_atual: Dict[str, Any],
+    concluido_atual: bool,
+    data_atual: str,
+) -> Dict[str, Any]:
+    """
+    Replicates the 'Roda integrada' 4-applications table (rows 5-8 & 38-48):
+    - 1ª aplicação, 2ª aplicação, 3ª aplicação, 4ª aplicação
+    - Variação (pontos): compares the latest completed application with the 1st application.
+    """
+    all_completed = []
+    for h in historico_resumo:
+        all_completed.append({
+            "data": h["data_avaliacao"],
+            "notas_preenchidas": h.get("total_com_nota", 50),
+            "situacao": "Concluída",
+            "media_geral": h["media_geral"],
+            "medias_eixos": [d["media"] for d in h["relatorio_dimensoes"]],
+        })
+    if concluido_atual:
+        all_completed.append({
+            "data": data_atual,
+            "notas_preenchidas": resultados_atual["resumo"]["total_com_nota"],
+            "situacao": "Concluída",
+            "media_geral": resultados_atual["resumo"]["media_geral"],
+            "medias_eixos": [d["media"] for d in resultados_atual["relatorio_dimensoes"]],
+        })
+
+    # If there are more than 4 completed applications, keep the 1st (initial reference) + the latest 3
+    if len(all_completed) <= 4:
+        slots_data = all_completed
+    else:
+        slots_data = [all_completed[0]] + all_completed[-3:]
+
+    aplicacoes_header = []
+    for idx in range(4):
+        rotulo = f"{idx + 1}ª aplicação"
+        if idx < len(slots_data):
+            s = slots_data[idx]
+            aplicacoes_header.append({
+                "indice": idx + 1,
+                "rotulo": rotulo,
+                "data": s["data"],
+                "notas_preenchidas": s["notas_preenchidas"],
+                "situacao": "Concluída",
+                "media_geral": s["media_geral"],
+                "medias_eixos": s["medias_eixos"],
+            })
+        elif idx == len(slots_data) and not concluido_atual and resultados_atual["resumo"]["total_respondidos"] > 0:
+            aplicacoes_header.append({
+                "indice": idx + 1,
+                "rotulo": rotulo,
+                "data": data_atual,
+                "notas_preenchidas": resultados_atual["resumo"]["total_com_nota"],
+                "situacao": "Em curso",
+                "media_geral": None,
+                "medias_eixos": [None for _ in COMP_EIXOS],
+            })
+        else:
+            aplicacoes_header.append({
+                "indice": idx + 1,
+                "rotulo": rotulo,
+                "data": None,
+                "notas_preenchidas": 0,
+                "situacao": "Não iniciada",
+                "media_geral": None,
+                "medias_eixos": [None for _ in COMP_EIXOS],
+            })
+
+    linhas_eixos = []
+    for eixo_idx, eixo in enumerate(COMP_EIXOS):
+        vals = [ap["medias_eixos"][eixo_idx] for ap in aplicacoes_header]
+        # Excel formula: =IF(B$8<>"Concluída","",IF(E$8="Concluída",E39-B39,IF(D$8="Concluída",D39-B39,IF(C$8="Concluída",C39-B39,""))))
+        variacao = None
+        if vals[0] is not None:
+            for last_idx in (3, 2, 1):
+                if vals[last_idx] is not None:
+                    variacao = round(vals[last_idx] - vals[0], 2)
+                    break
+        linhas_eixos.append({
+            "ordem": eixo["ordem"],
+            "eixo": eixo["dimensao"],
+            "rotulo_radar": eixo["rotulo_radar"],
+            "temas_origem": eixo["temas_origem"],
+            "ap1": vals[0],
+            "ap2": vals[1],
+            "ap3": vals[2],
+            "ap4": vals[3],
+            "variacao": variacao,
+        })
+
+    return {
+        "aplicacoes": aplicacoes_header,
+        "linhas_eixos": linhas_eixos,
+    }
+
+
+def compute_competencias_turma_report(
+    turma_info: Dict[str, Any],
+    total_alunos_turma: int,
+    assessments_respostas: List[Dict[str, Any]],
+) -> Dict[str, Any]:
+    """
+    Computes the ANONYMOUS aggregated class report for Roda de Liderança e Competências.
+    """
+    num_respondentes = len(assessments_respostas)
+    individual_results = [compute_competencias_results(r, concluido=True) for r in assessments_respostas]
+
+    dim_stats = []
+    for idx, eixo in enumerate(COMP_EIXOS):
+        dim_name = eixo["dimensao"]
+        dim_short = eixo["rotulo_radar"]
+
+        medias_alunos_dim = []
+        notas_itens_dim = []
+        for res in individual_results:
+            d_row = res["relatorio_dimensoes"][idx]
+            if d_row["media"] is not None:
+                medias_alunos_dim.append(d_row["media"])
+            for it in res["itens"]:
+                if it["dimensao"] == dim_name and it["nota"] is not None:
+                    notas_itens_dim.append(it["nota"])
+
+        media_turma_dim = round(sum(medias_alunos_dim) / len(medias_alunos_dim), 2) if medias_alunos_dim else None
+        pct_ate_6 = (
+            round(sum(1 for n in notas_itens_dim if n <= 6) * 100.0 / len(notas_itens_dim), 1)
+            if notas_itens_dim
+            else 0.0
+        )
+
+        dim_stats.append({
+            "ordem": eixo["ordem"],
+            "dimensao": dim_name,
+            "dimensao_curta": dim_short,
+            "o_que_avalia": eixo["temas_origem"],
+            "media_turma": media_turma_dim,
+            "respondentes_com_nota": len(medias_alunos_dim),
+            "total_notas_validas": len(notas_itens_dim),
+            "percentual_ate_6": pct_ate_6,
+        })
+
+    item_stats = []
+    for q_idx, q in enumerate(COMP_QUESTIONS):
+        notas_item = []
+        sem_nota_item = 0
+        for res in individual_results:
+            it = res["itens"][q_idx]
+            if it["nota"] is not None:
+                notas_item.append(it["nota"])
+            elif it["situacao"] in VALID_SEM_NOTA:
+                sem_nota_item += 1
+
+        media_item = round(sum(notas_item) / len(notas_item), 2) if notas_item else None
+        pct_ate_6_item = (
+            round(sum(1 for n in notas_item if n <= 6) * 100.0 / len(notas_item), 1)
+            if notas_item
+            else 0.0
+        )
+
+        item_stats.append({
+            "numero": q["numero"],
+            "dimensao": q["dimensao"],
+            "dimensao_curta": q["rotulo_radar"],
+            "item": q["rotulo_curto"],
+            "rotulo": f"{q['numero']:02d} {q['rotulo_radar']}",
+            "pergunta": q["pergunta"],
+            "media_turma": media_item,
+            "respostas_com_nota": len(notas_item),
+            "respostas_sem_nota": sem_nota_item,
+            "percentual_ate_6": pct_ate_6_item,
+        })
+
+    medias_gerais_alunos = [
+        res["resumo"]["media_geral"]
+        for res in individual_results
+        if res["resumo"]["media_geral"] is not None
+    ]
+    media_geral_turma = (
+        round(sum(medias_gerais_alunos) / len(medias_gerais_alunos), 2)
+        if medias_gerais_alunos
+        else None
+    )
+
+    dims_com_media = [d for d in dim_stats if d["media_turma"] is not None]
+    melhores_dimensoes = sorted(dims_com_media, key=lambda x: (-x["media_turma"], x["ordem"]))[:3]
+    piores_dimensoes = sorted(dims_com_media, key=lambda x: (x["media_turma"], x["ordem"]))[:3]
+
+    itens_com_media = [it for it in item_stats if it["media_turma"] is not None]
+    melhores_indicadores = sorted(itens_com_media, key=lambda x: (-x["media_turma"], x["numero"]))[:5]
+    piores_indicadores = sorted(itens_com_media, key=lambda x: (x["media_turma"], x["numero"]))[:5]
+    indicadores_atencao_ate_6 = sorted(
+        [it for it in itens_com_media if it["media_turma"] <= 6.0],
+        key=lambda x: (x["media_turma"], x["numero"])
+    )
+
+    taxa_participacao = (
+        round((num_respondentes * 100.0) / total_alunos_turma, 1)
+        if total_alunos_turma > 0
+        else 0.0
+    )
+
+    return {
+        "turma": turma_info,
+        "resumo_turma": {
+            "total_alunos": total_alunos_turma,
+            "total_respondentes": num_respondentes,
+            "taxa_participacao": taxa_participacao,
+            "media_geral_turma": media_geral_turma,
+            "total_indicadores_ate_6": len(indicadores_atencao_ate_6),
+        },
+        "melhores_dimensoes": melhores_dimensoes,
+        "piores_dimensoes": piores_dimensoes,
+        "melhores_indicadores": melhores_indicadores,
+        "piores_indicadores": piores_indicadores,
+        "indicadores_atencao_ate_6": indicadores_atencao_ate_6,
+        "relatorio_dimensoes": dim_stats,
+        "relatorio_itens": item_stats,
+        "roda_radar": {
+            "labels": [d["dimensao_curta"] for d in dim_stats],
+            "values": [d["media_turma"] for d in dim_stats],
+            "referencia_6": [6 for _ in dim_stats],
+        },
+        "eletrovitae": {
+            "labels": [it["rotulo"] for it in item_stats],
+            "values": [it["media_turma"] for it in item_stats],
+            "referencia_6": [6 for _ in item_stats],
+        },
+    }
+
 

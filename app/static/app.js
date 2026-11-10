@@ -8,13 +8,15 @@ const state = {
   user: null,
   authTab: 'login', // 'login' | 'request'
   publicTurmas: [],
+  activeModule: 'saude', // 'saude' | 'competencias'
   activeTab: 'questionario', // 'questionario' | 'resultados' | 'plano_acao' | 'tutorial' | 'admin_relatorio' | 'admin_alunos'
   resultsSubTab: 'todos', // 'todos' | 'roda' | 'relatorio' | 'eletrovitae'
   selectedDimFilter: 'todas',
   openExamples: {}, // { [numero]: boolean }
   questionnaireData: null,
+  localCargoArea: '',
   localAnswers: {},
-  localActionPlan: {}, // { [dimensao]: { objetivo, acoes, prazo, status } }
+  localActionPlan: {}, // { [dimensao]: { objetivo, acoes, meta_nota, prazo, status } }
   novaAvaliacaoMode: false,
   unsavedChanges: false,
   showAllDimsInPlan: false,
@@ -147,8 +149,10 @@ async function loadInitialAuthedData() {
 }
 
 async function loadQuestionnaireData() {
-  const data = await apiFetch('/api/questionnaire');
+  const endpoint = state.activeModule === 'competencias' ? '/api/competencias' : '/api/questionnaire';
+  const data = await apiFetch(endpoint);
   state.questionnaireData = data;
+  state.localCargoArea = data.cargo_area || '';
   state.localAnswers = JSON.parse(JSON.stringify(data.respostas || {}));
   state.localActionPlan = JSON.parse(JSON.stringify(data.plano_acao || {}));
   state.unsavedChanges = false;
@@ -170,6 +174,7 @@ async function loadAdminReport() {
   const q = new URLSearchParams({
     turma_id: state.selectedAdminTurma,
     apenas_concluidos: state.apenasConcluidosFilter ? 'true' : 'false',
+    modulo: state.activeModule,
   });
   state.adminReport = await apiFetch(`/api/admin/relatorio-turma?${q.toString()}`);
 }
@@ -178,6 +183,7 @@ function logout(notify = true) {
   state.token = null;
   state.user = null;
   state.questionnaireData = null;
+  state.localCargoArea = '';
   state.localAnswers = {};
   state.localActionPlan = {};
   state.novaAvaliacaoMode = false;
@@ -201,7 +207,8 @@ function evaluateLocalItem(numero) {
   if (hasSemNota) return semNota;
   if (!hasNota) return 'Não respondido';
   const n = Number(nota);
-  if (!Number.isInteger(n) || n < 1 || n > 10) return 'Nota inválida';
+  const minScore = state.activeModule === 'competencias' ? 0 : 1;
+  if (!Number.isInteger(n) || n < minScore || n > 10) return 'Nota inválida';
   return n <= 6 ? 'Nota até 6' : 'Nota acima de 6';
 }
 
@@ -670,13 +677,18 @@ function bindFirstAccessEvents() {
 // ----------------------------------------------------------------------------
 function renderNavbar() {
   const isAdmin = state.user.role === 'admin';
+  const isComp = state.activeModule === 'competencias';
+  const moduleTitle = isComp
+    ? 'Roda Integrada de Liderança e Competências'
+    : 'Roda da Saúde Integral';
+
   const turmaBadge = state.user.turma
     ? `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amberref/20 text-amberref-light border border-amberref/40">
          Turma: ${escapeHtml(state.user.turma.cod_turma)} • ${escapeHtml(state.user.turma.nome_curso || '')}
        </span>`
     : isAdmin
     ? `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amberref text-white">
-         Perfil Administradora • Profa. Sheila Ricoy
+         Perfil Administrador(a)
        </span>`
     : '';
 
@@ -689,7 +701,7 @@ function renderNavbar() {
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <div class="flex items-center gap-3 flex-wrap">
-              <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight">Roda da Saúde Integral</h1>
+              <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight">${escapeHtml(moduleTitle)}</h1>
               ${turmaBadge}
             </div>
             <p class="text-xs text-slate-300 mt-1">
@@ -712,8 +724,44 @@ function renderNavbar() {
           </div>
         </div>
 
+        <!-- Module Switcher: Roda da Saúde Integral vs Roda de Liderança e Competências -->
+        <div class="mt-4 pt-3 border-t border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-amberref-light mr-1">
+              Módulo do Sistema:
+            </span>
+            <button
+              data-switch-module="saude"
+              class="module-switch-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center gap-2 ${
+                !isComp
+                  ? 'bg-emerald-600 text-white shadow-md ring-2 ring-emerald-300/60'
+                  : 'bg-white/10 text-slate-200 hover:bg-white/20 border border-white/15'
+              }"
+            >
+              🌿 Roda da Saúde Integral
+            </button>
+            <button
+              data-switch-module="competencias"
+              class="module-switch-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-extrabold transition-all flex items-center gap-2 ${
+                isComp
+                  ? 'bg-cerulean text-white shadow-md ring-2 ring-sky-300/60'
+                  : 'bg-white/10 text-slate-200 hover:bg-white/20 border border-white/15'
+              }"
+            >
+              🎯 Roda de Liderança e Competências
+            </button>
+          </div>
+          <span class="text-[11px] text-slate-300">
+            ${
+              isComp
+                ? 'Avaliação Independente • 50 Comportamentos em 10 Eixos • Evolução em 4 Aplicações'
+                : 'Avaliação Independente • 50 Perguntas em 10 Dimensões de Saúde Integral'
+            }
+          </span>
+        </div>
+
         <!-- Navigation Tabs -->
-        <nav class="flex flex-wrap gap-2 mt-5 pt-3 border-t border-white/10">
+        <nav class="flex flex-wrap gap-2 mt-4 pt-3 border-t border-white/10">
           ${
             isAdmin
               ? `
@@ -722,7 +770,7 @@ function renderNavbar() {
                 ? 'bg-amberref text-white shadow'
                 : 'bg-white/10 text-slate-200 hover:bg-white/20'
             }">
-              📊 Relatórios da Turma (Médias e Indicadores)
+              📊 Relatório da Turma (${isComp ? 'Competências' : 'Saúde Integral'})
             </button>
             <button data-nav="admin_alunos" class="nav-tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-1.5 ${
               state.activeTab === 'admin_alunos'
@@ -741,28 +789,28 @@ function renderNavbar() {
                 ? 'bg-cerulean text-white shadow'
                 : 'bg-white/10 text-slate-200 hover:bg-white/20'
             }">
-              📝 Meu Questionário Pessoal
+              📝 ${isComp ? 'Minha Autoavaliação (Competências)' : 'Meu Questionário (Saúde)'}
             </button>
             <button data-nav="resultados" class="nav-tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
               state.activeTab === 'resultados'
                 ? 'bg-cerulean text-white shadow'
                 : 'bg-white/10 text-slate-200 hover:bg-white/20'
             }">
-              📈 Meus Gráficos Pessoais
+              📈 ${isComp ? 'Minha Roda de Competências' : 'Meus Gráficos (Saúde)'}
             </button>
             <button data-nav="plano_acao" class="nav-tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
               state.activeTab === 'plano_acao'
                 ? 'bg-cerulean text-white shadow'
                 : 'bg-white/10 text-slate-200 hover:bg-white/20'
             }">
-              🎯 Meu Plano de Ação
+              🎯 Meu Plano de Ação (${isComp ? 'Competências' : 'Saúde'})
             </button>
             <button data-nav="tutorial" class="nav-tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
               state.activeTab === 'tutorial'
                 ? 'bg-cerulean text-white shadow'
                 : 'bg-white/10 text-slate-200 hover:bg-white/20'
             }">
-              📖 Tutorial e 10 Eixos
+              📖 ${isComp ? 'Critérios e 10 Eixos' : 'Tutorial e 10 Eixos'}
             </button>
           `
               : `
@@ -771,14 +819,14 @@ function renderNavbar() {
                 ? 'bg-amberref text-white shadow'
                 : 'bg-white/10 text-slate-200 hover:bg-white/20'
             }">
-              📝 1. Responder Questionário (50 Itens)
+              📝 1. ${isComp ? 'Autoavaliação de Competências (50 Comportamentos)' : 'Responder Questionário (50 Itens)'}
             </button>
             <button data-nav="resultados" class="nav-tab-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-1.5 ${
               state.activeTab === 'resultados'
                 ? 'bg-amberref text-white shadow'
                 : 'bg-white/10 text-slate-200 hover:bg-white/20'
             }">
-              📊 2. Meus Resultados (Roda, Relatório e Eletrovitae)
+              📊 2. ${isComp ? 'Roda Integrada, 4 Aplicações e Perfil' : 'Meus Resultados (Roda, Relatório e Eletrovitae)'}
               ${
                 state.questionnaireData?.concluido
                   ? `<span class="px-1.5 py-0.5 rounded bg-emerald-500/30 border border-emerald-300/40 text-[10px]">Liberado</span>`
@@ -790,10 +838,10 @@ function renderNavbar() {
                 ? 'bg-amberref text-white shadow'
                 : 'bg-white/10 text-slate-200 hover:bg-white/20'
             }">
-              🎯 3. Plano de Ação (Áreas em Desfalque)
+              🎯 3. Plano de Ação (${isComp ? 'Eixos Prioritários' : 'Áreas em Desfalque'})
               ${
                 state.questionnaireData?.concluido && deficitCount > 0
-                  ? `<span class="px-1.5 py-0.5 rounded-full bg-amber-500/40 border border-amber-300/50 text-[10px] font-bold">${deficitCount} áreas</span>`
+                  ? `<span class="px-1.5 py-0.5 rounded-full bg-amber-500/40 border border-amber-300/50 text-[10px] font-bold">${deficitCount} eixos</span>`
                   : ''
               }
             </button>
@@ -802,7 +850,7 @@ function renderNavbar() {
                 ? 'bg-amberref text-white shadow'
                 : 'bg-white/10 text-slate-200 hover:bg-white/20'
             }">
-              📖 4. Tutorial e Eixos
+              📖 4. ${isComp ? 'Critérios e Eixos' : 'Tutorial e Eixos'}
             </button>
           `
           }
@@ -816,7 +864,7 @@ function renderFooter() {
   return `
     <footer class="bg-white border-t border-slate-200 mt-12 py-5 text-center text-xs text-slate-500 no-print">
       <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-        <span><strong>Roda da Saúde Integral</strong> — Autoria: Profa. Sheila Ricoy em parceria com I.A.</span>
+        <span><strong>Roda da Saúde Integral & Roda de Liderança e Competências</strong> — Profa. Sheila Ricoy</span>
         <span>Ciclo de autopercepção trimestral (3 meses) • Dados individuais confidenciais</span>
       </div>
     </footer>
@@ -843,7 +891,7 @@ function renderActiveTabContent() {
 }
 
 // ----------------------------------------------------------------------------
-// 4. Questionnaire View (50 Items across 10 Dimensions)
+// 4. Questionnaire View (50 Items across 10 Dimensions / Eixos)
 // ----------------------------------------------------------------------------
 function renderQuestionnaireView() {
   if (!state.questionnaireData) {
@@ -853,9 +901,10 @@ function renderQuestionnaireView() {
   const prog = getLocalProgressSummary();
   const pct = Math.round((prog.respondidos / 50) * 100);
   const isAdmin = state.user.role === 'admin';
+  const isComp = state.activeModule === 'competencias';
 
   const dimOptions = [
-    `<option value="todas" ${state.selectedDimFilter === 'todas' ? 'selected' : ''}>Todas as 10 Dimensões (50 perguntas)</option>`,
+    `<option value="todas" ${state.selectedDimFilter === 'todas' ? 'selected' : ''}>Todos os 10 Eixos (50 itens)</option>`,
     ...eixos.map(
       (e) =>
         `<option value="${escapeHtml(e.dimensao)}" ${
@@ -887,7 +936,7 @@ function renderQuestionnaireView() {
           ? `
         <div class="bg-cerulean-light border border-cerulean/30 rounded-2xl p-4 flex items-center justify-between gap-4">
           <div class="text-xs sm:text-sm text-navy">
-            <strong>Modo Pessoal da Administradora:</strong> Você pode responder ao questionário e gerar seus gráficos normalmente. Suas respostas são exclusivas do seu perfil e <strong>não são contabilizadas em nenhuma turma</strong>.
+            <strong>Modo Pessoal da Administradora:</strong> Você pode responder à avaliação (${isComp ? 'Roda de Competências' : 'Roda da Saúde'}) e gerar seus gráficos normalmente. Suas respostas são exclusivas do seu perfil e <strong>não são contabilizadas em nenhuma turma</strong>.
           </div>
         </div>
       `
@@ -899,7 +948,7 @@ function renderQuestionnaireView() {
           ? `
         <div class="bg-indigo-50 border border-indigo-300 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div class="text-xs sm:text-sm text-indigo-950">
-            <strong>🔄 Modo de Nova Avaliação Ativo:</strong> Ao finalizar este questionário, a sua <strong>Roda da Saúde anterior (${escapeHtml(data_avaliacao)})</strong> será automaticamente preservada como sombreado no fundo e a nova roda será desenhada por cima!
+            <strong>🔄 Modo de Nova Avaliação Ativo:</strong> Ao finalizar este questionário, a sua <strong>${isComp ? 'Roda de Competências' : 'Roda da Saúde'} anterior (${escapeHtml(data_avaliacao)})</strong> será automaticamente preservada como sombreado no fundo${isComp ? ' e registrada na tabela das 4 aplicações' : ''} e a nova roda será desenhada por cima!
           </div>
           <button id="btn-clear-form-new" class="px-3.5 py-1.5 rounded-xl bg-white hover:bg-indigo-100 text-indigo-900 border border-indigo-300 text-xs font-bold shrink-0">
             Limpar respostas para preencher do zero
@@ -913,14 +962,22 @@ function renderQuestionnaireView() {
       <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6">
         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-4 border-b border-slate-100">
           <div>
-            <span class="inline-block px-2.5 py-0.5 rounded-md text-xs font-bold bg-navy text-white mb-1.5">
-              Questionário de Autopercepção em 10 Dimensões
+            <span class="inline-block px-2.5 py-0.5 rounded-md text-xs font-bold ${isComp ? 'bg-cerulean' : 'bg-navy'} text-white mb-1.5">
+              ${isComp ? 'Autoavaliação • Roda Integrada de Liderança e Competências' : 'Questionário de Autopercepção em 10 Dimensões'}
             </span>
             <h2 class="text-lg sm:text-xl font-bold text-navy">
-              Considere os últimos três meses. Dê uma nota de 1 a 10 conforme sua satisfação com cada aspecto no período.
+              ${
+                isComp
+                  ? 'Considere os últimos três meses. 0 = não demonstro. 5 = demonstro com alguma regularidade. 10 = demonstro de forma consistente.'
+                  : 'Considere os últimos três meses. Dê uma nota de 1 a 10 conforme sua satisfação com cada aspecto no período.'
+              }
             </h2>
             <p class="text-xs text-slate-600 mt-1">
-              Preencha a <strong>Nota (1 a 10)</strong> OU escolha um motivo em <strong>"Sem nota"</strong> (<em>Não se aplica</em> ou <em>Prefiro não responder</em>). Clique em <strong>"Ver exemplo"</strong> quando precisar.
+              ${
+                isComp
+                  ? 'Avalie cada um dos 50 comportamentos de liderança e competências em uma escala de <strong>0 a 10</strong> (ou selecione um motivo em "Sem nota"). Sugestão de reaplicação: a cada 3 meses (acompanhamento em até 4 aplicações).'
+                  : 'Preencha a <strong>Nota (1 a 10)</strong> OU escolha um motivo em <strong>"Sem nota"</strong> (<em>Não se aplica</em> ou <em>Prefiro não responder</em>). Clique em <strong>"Ver exemplo"</strong> quando precisar.'
+              }
             </p>
           </div>
           <div class="flex flex-wrap items-center gap-2 shrink-0">
@@ -935,24 +992,54 @@ function renderQuestionnaireView() {
           </div>
         </div>
 
-        <!-- Scale quick bar -->
-        <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 my-4 text-xs">
-          <div class="p-2.5 rounded-xl bg-red-50 border border-red-200 text-red-900">
-            <span class="font-extrabold">Notas 1 a 2:</span> Muito insatisfatório
+        ${
+          isComp
+            ? `
+          <div class="my-4 p-3.5 rounded-xl bg-slatebg border border-slate-200 flex flex-col sm:flex-row sm:items-center gap-3">
+            <label for="comp-cargo-area" class="text-xs font-extrabold uppercase tracking-wider text-navy shrink-0">
+              Cargo / Área de Atuação (Aba Autoavaliação):
+            </label>
+            <input
+              id="comp-cargo-area"
+              type="text"
+              value="${escapeHtml(state.localCargoArea || '')}"
+              placeholder="Ex: Gestor de Projetos / Operações / Liderança..."
+              class="w-full sm:max-w-md px-3.5 py-2 rounded-xl border border-slate-300 bg-white text-xs sm:text-sm font-medium text-navy focus:outline-none focus:ring-2 focus:ring-cerulean"
+            />
           </div>
-          <div class="p-2.5 rounded-xl bg-orange-50 border border-orange-200 text-orange-900">
-            <span class="font-extrabold">Notas 3 a 4:</span> Insatisfatório
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 my-4 text-xs">
+            <div class="p-2.5 rounded-xl bg-red-50 border border-red-200 text-red-900">
+              <span class="font-extrabold">Nota 0 a 4:</span> Não demonstro / demonstro raramente
+            </div>
+            <div class="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900">
+              <span class="font-extrabold">Nota 5 a 6:</span> Demonstro com alguma regularidade (A desenvolver)
+            </div>
+            <div class="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900">
+              <span class="font-extrabold">Nota 7 a 10:</span> Demonstro de forma frequente a consistente
+            </div>
           </div>
-          <div class="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900">
-            <span class="font-extrabold">Notas 5 a 6:</span> Intermediário (A explorar)
+        `
+            : `
+          <!-- Scale quick bar -->
+          <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 my-4 text-xs">
+            <div class="p-2.5 rounded-xl bg-red-50 border border-red-200 text-red-900">
+              <span class="font-extrabold">Notas 1 a 2:</span> Muito insatisfatório
+            </div>
+            <div class="p-2.5 rounded-xl bg-orange-50 border border-orange-200 text-orange-900">
+              <span class="font-extrabold">Notas 3 a 4:</span> Insatisfatório
+            </div>
+            <div class="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900">
+              <span class="font-extrabold">Notas 5 a 6:</span> Intermediário (A explorar)
+            </div>
+            <div class="p-2.5 rounded-xl bg-sky-50 border border-sky-200 text-sky-900">
+              <span class="font-extrabold">Notas 7 a 8:</span> Satisfatório
+            </div>
+            <div class="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 col-span-2 sm:col-span-1">
+              <span class="font-extrabold">Notas 9 a 10:</span> Muito satisfatório
+            </div>
           </div>
-          <div class="p-2.5 rounded-xl bg-sky-50 border border-sky-200 text-sky-900">
-            <span class="font-extrabold">Notas 7 a 8:</span> Satisfatório
-          </div>
-          <div class="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 col-span-2 sm:col-span-1">
-            <span class="font-extrabold">Notas 9 a 10:</span> Muito satisfatório
-          </div>
-        </div>
+        `
+        }
 
         <!-- Progress and Controls Bar -->
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-2">
@@ -974,7 +1061,7 @@ function renderQuestionnaireView() {
               💾 Salvar Rascunho
             </button>
             <button id="btn-finalize-questionnaire" class="px-5 py-2.5 rounded-xl bg-cerulean hover:bg-cerulean-dark text-white font-bold text-xs shadow-md transition-colors">
-              ✅ ${concluido ? 'Salvar Nova Roda e Comparar' : 'Finalizar e Ver Resultados'}
+              ✅ ${concluido ? 'Salvar Nova Aplicação e Comparar' : 'Finalizar e Ver Resultados'}
             </button>
           </div>
         </div>
@@ -990,18 +1077,14 @@ function renderQuestionnaireView() {
               <div>
                 <div class="flex items-center gap-2">
                   <span class="px-2 py-0.5 rounded bg-amberref text-white text-xs font-bold">
-                    Dimensão ${group.eixoMeta.ordem || ''} de 10
+                    Eixo ${group.eixoMeta.ordem || ''} de 10
                   </span>
                   <h3 class="text-base sm:text-lg font-bold">${escapeHtml(group.dimensao)}</h3>
                 </div>
-                <p class="text-xs text-slate-200 mt-0.5">${escapeHtml(group.eixoMeta.o_que_avalia || '')}</p>
+                <p class="text-xs text-slate-200 mt-0.5">${escapeHtml(group.eixoMeta.o_que_avalia || group.eixoMeta.temas_origem || '')}</p>
               </div>
-              <span class="self-start sm:self-auto px-2.5 py-1 rounded-full text-[11px] font-semibold ${
-                group.eixoMeta.revisao === 'Validado'
-                  ? 'bg-emerald-500/20 text-emerald-200 border border-emerald-400/30'
-                  : 'bg-amber-500/20 text-amber-200 border border-amber-400/30'
-              }">
-                Revisão da autora: ${escapeHtml(group.eixoMeta.revisao || 'Em revisão')}
+              <span class="self-start sm:self-auto px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-500/20 text-emerald-200 border border-emerald-400/30">
+                ${isComp ? `Radar: ${escapeHtml(group.eixoMeta.rotulo_radar || group.dimensao)}` : `Revisão da autora: ${escapeHtml(group.eixoMeta.revisao || 'Validado')}`}
               </span>
             </div>
 
@@ -1017,11 +1100,11 @@ function renderQuestionnaireView() {
       <!-- Bottom Action Bar -->
       <div class="bg-white rounded-2xl shadow-md border border-slate-200 p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div class="text-xs sm:text-sm text-slate-700">
-          <strong>Status atual:</strong> ${prog.respondidos} de 50 perguntas respondidas
+          <strong>Status atual:</strong> ${prog.respondidos} de 50 itens respondidos
           ${
             prog.pendentes > 0
-              ? `<span class="text-amber-700 font-semibold">(faltam ${prog.pendentes} pergunta(s) para liberar os resultados finais)</span>`
-              : `<span class="text-emerald-700 font-bold">(todas as 50 perguntas estão preenchidas!)</span>`
+              ? `<span class="text-amber-700 font-semibold">(faltam ${prog.pendentes} item(ns) para liberar os resultados finais)</span>`
+              : `<span class="text-emerald-700 font-bold">(todos os 50 itens estão preenchidos!)</span>`
           }
         </div>
         <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-end">
@@ -1029,7 +1112,7 @@ function renderQuestionnaireView() {
             💾 Salvar Progresso
           </button>
           <button id="btn-finalize-bottom" class="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm shadow-lg transition-colors">
-            ✅ ${concluido ? 'Finalizar Nova Resposta (Preservar Roda Anterior no Fundo)' : 'Finalizar Questionário e Abrir Resultados'}
+            ✅ ${concluido ? 'Finalizar Nova Aplicação (Preservar Roda Anterior no Fundo)' : 'Finalizar Avaliação e Abrir Resultados'}
           </button>
         </div>
       </div>
@@ -1040,10 +1123,12 @@ function renderQuestionnaireView() {
 function renderQuestionRow(q) {
   const numStr = String(q.numero);
   const ans = state.localAnswers[numStr] || {};
-  const currentNota = ans.nota !== null && ans.nota !== undefined ? Number(ans.nota) : null;
+  const currentNota = ans.nota !== null && ans.nota !== undefined && String(ans.nota).trim() !== '' ? Number(ans.nota) : null;
   const currentSemNota = ans.sem_nota || '';
   const situacao = evaluateLocalItem(q.numero);
   const isExampleOpen = !!state.openExamples[numStr];
+  const isComp = state.activeModule === 'competencias';
+  const minScore = isComp ? 0 : 1;
 
   let badgeClass = 'bg-slate-100 text-slate-600 border-slate-200';
   if (situacao === 'Nota até 6') {
@@ -1057,7 +1142,7 @@ function renderQuestionRow(q) {
   }
 
   const scoreButtons = [];
-  for (let n = 1; n <= 10; n++) {
+  for (let n = minScore; n <= 10; n++) {
     const selected = currentNota === n;
     let btnStyle = 'bg-white text-slate-700 border-slate-300 hover:border-cerulean hover:bg-cerulean-light';
     if (selected) {
@@ -1071,12 +1156,15 @@ function renderQuestionRow(q) {
         type="button"
         data-qnum="${q.numero}"
         data-score="${n}"
-        class="score-btn w-9 h-9 sm:w-10 sm:h-10 rounded-xl border font-bold text-xs sm:text-sm flex items-center justify-center ${btnStyle}"
+        class="score-btn w-8 h-9 sm:w-9 sm:h-10 rounded-xl border font-bold text-xs sm:text-sm flex items-center justify-center ${btnStyle}"
       >
         ${n}
       </button>
     `);
   }
+
+  const itemShortLabel = q.item || q.rotulo_curto || q.rotulo_radar || q.dimensao;
+  const exampleText = q.exemplo || q.exemplos || '';
 
   return `
     <div id="question-row-${q.numero}" class="p-4 sm:p-5 transition-colors ${
@@ -1089,7 +1177,7 @@ function renderQuestionRow(q) {
               #${String(q.numero).padStart(2, '0')}
             </span>
             <span class="text-xs font-bold uppercase tracking-wider text-cerulean">
-              ${escapeHtml(q.item)}
+              ${escapeHtml(itemShortLabel)}
             </span>
             <span id="status-badge-${q.numero}" class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${badgeClass}">
               ${escapeHtml(situacao)}
@@ -1099,7 +1187,7 @@ function renderQuestionRow(q) {
               data-toggle-example="${q.numero}"
               class="text-xs font-semibold text-cerulean hover:underline inline-flex items-center gap-1 ml-1"
             >
-              💡 ${isExampleOpen ? 'Ocultar exemplo' : 'Ver exemplo'}
+              💡 ${isExampleOpen ? 'Ocultar critério' : isComp ? 'Ver critério' : 'Ver exemplo'}
             </button>
           </div>
 
@@ -1110,14 +1198,14 @@ function renderQuestionRow(q) {
           <div id="example-box-${q.numero}" class="${
             isExampleOpen ? 'block' : 'hidden'
           } mt-2 p-3 rounded-xl bg-cerulean-light/70 border border-cerulean/20 text-xs text-navy">
-            <strong>Exemplo (${escapeHtml(q.item)}):</strong> ${escapeHtml(q.exemplo)}
+            <strong>${isComp ? 'Critério / Eixo' : `Exemplo (${escapeHtml(itemShortLabel)})`}:</strong> ${escapeHtml(exampleText)}
           </div>
         </div>
 
         <div class="bg-amberref-light/70 border border-amberref/30 rounded-2xl p-3 flex flex-col sm:flex-row items-start sm:items-center gap-3 shrink-0">
           <div>
             <div class="text-[11px] font-bold uppercase tracking-wider text-slate-600 mb-1.5">
-              Nota de 1 a 10:
+              Nota de ${minScore} a 10:
             </div>
             <div class="flex flex-wrap gap-1">
               ${scoreButtons.join('')}
@@ -1144,15 +1232,124 @@ function renderQuestionRow(q) {
 }
 
 // ----------------------------------------------------------------------------
-// 5. Personal Results View (Roda da Saúde + Sombreado Anterior, Relatório, Eletrovitae)
+// 5. Personal Results View (Roda da Saúde / Competências + Sombreado Anterior, 4 Aplicações, Relatório, Eletrovitae)
 // ----------------------------------------------------------------------------
+function renderQuatroAplicacoesTable() {
+  const qa = state.questionnaireData?.quatro_aplicacoes;
+  if (!qa || state.activeModule !== 'competencias') return '';
+
+  const apps = qa.aplicacoes || [];
+  const linhas = qa.linhas_eixos || [];
+
+  return `
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6 print-break">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+        <div>
+          <span class="px-2.5 py-0.5 rounded bg-cerulean text-white text-xs font-bold">
+            Aba "Roda integrada" da Planilha Oficial
+          </span>
+          <h3 class="text-base sm:text-lg font-extrabold text-navy mt-1">
+            Evolução nas 4 Aplicações e Variação por Eixo (Pontos)
+          </h3>
+          <p class="text-xs text-slate-500 mt-0.5">
+            A 1ª aplicação é a referência inicial. A coluna de Variação compara a última aplicação concluída com a 1ª aplicação.
+          </p>
+        </div>
+      </div>
+
+      <!-- Resumo das 4 Aplicações (Linhas 5 a 8 da planilha) -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+        ${apps
+          .map(
+            (ap) => `
+          <div class="p-3.5 rounded-xl border ${
+            ap.situacao === 'Concluída'
+              ? 'bg-cerulean-light/40 border-cerulean/40'
+              : 'bg-slatebg border-slate-200'
+          }">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-extrabold text-navy">${escapeHtml(ap.rotulo)}</span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                ap.situacao === 'Concluída'
+                  ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                  : 'bg-slate-200 text-slate-600'
+              }">
+                ${escapeHtml(ap.situacao)}
+              </span>
+            </div>
+            <div class="text-xs text-slate-600 mt-1.5">
+              Data: <strong>${escapeHtml(ap.data || '—')}</strong>
+            </div>
+            <div class="text-xs text-slate-600">
+              Notas preenchidas: <strong>${ap.notas_preenchidas} de 50</strong>
+            </div>
+            ${
+              ap.media_geral !== null && ap.media_geral !== undefined
+                ? `<div class="text-xs font-extrabold text-cerulean mt-1">Média Geral: ${formatNumber(ap.media_geral, 2)}</div>`
+                : ''
+            }
+          </div>
+        `
+          )
+          .join('')}
+      </div>
+
+      <!-- Tabela de Médias nas 4 Aplicações e Variação (Linhas 38 a 48 da planilha) -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs sm:text-sm border-collapse">
+          <thead>
+            <tr class="bg-navy text-white text-left">
+              <th class="py-2.5 px-3 rounded-tl-lg font-bold">Eixo de Liderança e Competências</th>
+              <th class="py-2.5 px-2 text-center font-bold">1ª aplicação</th>
+              <th class="py-2.5 px-2 text-center font-bold">2ª aplicação</th>
+              <th class="py-2.5 px-2 text-center font-bold">3ª aplicação</th>
+              <th class="py-2.5 px-2 text-center font-bold">4ª aplicação</th>
+              <th class="py-2.5 px-3 rounded-tr-lg text-center font-bold">Variação (pontos)</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200">
+            ${linhas
+              .map((row, idx) => {
+                let varHtml = '—';
+                if (row.variacao !== null && row.variacao !== undefined) {
+                  if (row.variacao > 0) {
+                    varHtml = `<span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-extrabold text-xs">+${formatNumber(row.variacao, 1)}</span>`;
+                  } else if (row.variacao < 0) {
+                    varHtml = `<span class="px-2 py-0.5 rounded bg-amber-100 text-amber-900 font-extrabold text-xs">${formatNumber(row.variacao, 1)}</span>`;
+                  } else {
+                    varHtml = `<span class="text-slate-500 font-bold text-xs">0,0</span>`;
+                  }
+                }
+                return `
+                  <tr class="${idx % 2 === 1 ? 'bg-slatebg/60' : 'bg-white'} hover:bg-cerulean-light/30">
+                    <td class="py-2.5 px-3 font-bold text-navy">${escapeHtml(row.eixo)}</td>
+                    <td class="py-2.5 px-2 text-center font-semibold text-slate-700">${formatNumber(row.ap1, 1)}</td>
+                    <td class="py-2.5 px-2 text-center font-semibold text-slate-700">${formatNumber(row.ap2, 1)}</td>
+                    <td class="py-2.5 px-2 text-center font-semibold text-slate-700">${formatNumber(row.ap3, 1)}</td>
+                    <td class="py-2.5 px-2 text-center font-semibold text-slate-700">${formatNumber(row.ap4, 1)}</td>
+                    <td class="py-2.5 px-3 text-center">${varHtml}</td>
+                  </tr>
+                `;
+              })
+              .join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
 function renderPersonalResultsView() {
   if (!state.questionnaireData) {
     return `<div class="p-8 text-center text-slate-500">Carregando resultados...</div>`;
   }
 
-  const { concluido, data_avaliacao, resultados, avaliacao_anterior } = state.questionnaireData;
+  const { concluido, data_avaliacao, resultados, avaliacao_anterior, cargo_area } = state.questionnaireData;
   const isAdmin = state.user.role === 'admin';
+  const isComp = state.activeModule === 'competencias';
+  const exportUrl = isComp
+    ? `api/competencias/export-excel?token=${encodeURIComponent(state.token)}`
+    : `api/questionnaire/export-excel?token=${encodeURIComponent(state.token)}`;
 
   if (!concluido && resultados.resumo.total_respondidos < 50) {
     return `
@@ -1162,9 +1359,9 @@ function renderPersonalResultsView() {
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
           </svg>
         </div>
-        <h2 class="text-xl font-bold text-navy">Finalize o Questionário para Acessar seus Resultados</h2>
+        <h2 class="text-xl font-bold text-navy">Finalize os 50 Itens para Acessar seus Resultados</h2>
         <p class="text-sm text-slate-600 leading-relaxed">
-          Para visualizar sua <strong>Roda da Saúde Integral em Radar</strong>, o <strong>Relatório de Notas</strong>, o <strong>Eletrovitae dos 50 Itens</strong> e montar seu <strong>Plano de Ação</strong>, responda às 50 perguntas do questionário e clique em <strong>"Finalizar e Ver Resultados"</strong>.
+          Para visualizar sua <strong>${isComp ? 'Roda Integrada de Liderança e Competências em Radar' : 'Roda da Saúde Integral em Radar'}</strong>, o <strong>Relatório de Notas</strong>, o <strong>Eletrovitae dos 50 Itens</strong> e montar seu <strong>Plano de Ação</strong>, preencha os 50 itens e clique em <strong>"Finalizar e Ver Resultados"</strong>.
         </p>
         <p class="text-xs font-semibold text-cerulean">
           Progresso salvo até o momento: ${resultados.resumo.total_respondidos} de 50 itens respondidos.
@@ -1174,7 +1371,7 @@ function renderPersonalResultsView() {
             id="btn-go-to-questionnaire"
             class="px-6 py-3 rounded-xl bg-navy hover:bg-navy-light text-white font-semibold text-sm shadow-md transition-colors"
           >
-            📝 Ir para o Questionário
+            📝 Ir para a Avaliação
           </button>
         </div>
       </div>
@@ -1191,8 +1388,8 @@ function renderPersonalResultsView() {
         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
             <div class="flex items-center gap-2 flex-wrap mb-1">
-              <span class="px-2.5 py-0.5 rounded-md bg-navy text-white text-xs font-bold">
-                Resultados da Avaliação (${escapeHtml(data_avaliacao)})
+              <span class="px-2.5 py-0.5 rounded-md ${isComp ? 'bg-cerulean' : 'bg-navy'} text-white text-xs font-bold">
+                ${isComp ? 'Roda de Competências' : 'Roda da Saúde'} (${escapeHtml(data_avaliacao)})
               </span>
               <span class="px-2.5 py-0.5 rounded-md bg-cerulean-light text-navy text-xs font-bold">
                 ${escapeHtml(resumo.mensagem_status)}
@@ -1211,9 +1408,10 @@ function renderPersonalResultsView() {
               }
             </div>
             <h2 class="text-xl sm:text-2xl font-extrabold text-navy">
-              ${escapeHtml(state.user.nome)} — Roda da Saúde, Relatório de Notas e Eletrovitae
+              ${escapeHtml(state.user.nome)} — ${isComp ? 'Roda Integrada de Liderança e Competências' : 'Roda da Saúde, Relatório de Notas e Eletrovitae'}
             </h2>
             <p class="text-xs text-slate-500 mt-1">
+              ${isComp && cargo_area ? `Cargo / Área: <strong>${escapeHtml(cargo_area)}</strong> • ` : ''}
               Data da resposta atual: <strong>${escapeHtml(data_avaliacao)}</strong>
               ${hasPrev ? `• Última resposta anterior: <strong>${escapeHtml(avaliacao_anterior.data_avaliacao)}</strong> (preservada como sombreado no fundo da Roda)` : ''}
             </p>
@@ -1227,7 +1425,7 @@ function renderPersonalResultsView() {
               🎯 Abrir Plano de Ação
             </button>
             <a
-              href="api/questionnaire/export-excel?token=${encodeURIComponent(state.token)}"
+              href="${exportUrl}"
               target="_blank"
               class="px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-xs shadow-sm transition-colors inline-flex items-center gap-1.5"
             >
@@ -1264,7 +1462,7 @@ function renderPersonalResultsView() {
             <div class="text-2xl font-extrabold text-slate-700 mt-0.5">${resumo.total_sem_nota} <span class="text-xs font-normal text-slate-500">itens</span></div>
           </div>
           <div class="p-3.5 rounded-xl bg-amberref-soft border border-amberref/30">
-            <div class="text-[11px] font-bold uppercase text-amberref">Assuntos a Explorar (≤ 6)</div>
+            <div class="text-[11px] font-bold uppercase text-amberref">${isComp ? 'Comportamentos a Desenvolver (≤ 6)' : 'Assuntos a Explorar (≤ 6)'}</div>
             <div class="text-2xl font-extrabold text-amberref mt-0.5">${resumo.total_assuntos_explorar} <span class="text-xs font-normal text-slate-600">itens</span></div>
           </div>
         </div>
@@ -1279,22 +1477,22 @@ function renderPersonalResultsView() {
           <button data-res-subtab="roda" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition-colors ${
             state.resultsSubTab === 'roda' ? 'bg-navy text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
           }">
-            1. Roda da Saúde em Radar
+            1. ${isComp ? 'Roda de Competências em Radar' : 'Roda da Saúde em Radar'}
           </button>
           <button data-res-subtab="relatorio" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition-colors ${
             state.resultsSubTab === 'relatorio' ? 'bg-navy text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
           }">
-            2. Relatório de Notas
+            2. ${isComp ? 'Relatório por Eixo e 4 Aplicações' : 'Relatório de Notas'}
           </button>
           <button data-res-subtab="eletrovitae" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition-colors ${
             state.resultsSubTab === 'eletrovitae' ? 'bg-navy text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
           }">
-            3. Eletrovitae dos 50 Itens
+            3. ${isComp ? 'Perfil dos 50 Comportamentos' : 'Eletrovitae dos 50 Itens'}
           </button>
         </div>
       </div>
 
-      <!-- 1. Roda da Saúde em Radar + 2. Relatório de Notas por Dimensão -->
+      <!-- 1. Roda em Radar + 2. Relatório de Notas por Dimensão/Eixo -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
         ${
           state.resultsSubTab === 'todos' || state.resultsSubTab === 'roda'
@@ -1303,9 +1501,9 @@ function renderPersonalResultsView() {
             state.resultsSubTab === 'roda' ? 'lg:col-span-12' : 'lg:col-span-5'
           } bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6 flex flex-col justify-between print-break">
             <div>
-              <h3 class="text-base sm:text-lg font-extrabold text-navy">Roda da Saúde em Radar</h3>
+              <h3 class="text-base sm:text-lg font-extrabold text-navy">${isComp ? 'Roda Integrada de Liderança e Competências' : 'Roda da Saúde em Radar'}</h3>
               <p class="text-xs text-slate-500 mt-0.5">
-                Média das notas válidas de cada uma das 10 dimensões (escala 0 a 10).
+                Média das notas válidas de cada um dos 10 eixos (escala 0 a 10).
                 ${
                   hasPrev
                     ? `<strong class="text-slate-700">A última Roda (${escapeHtml(avaliacao_anterior.data_avaliacao)}) está preservada como sombreado cinza no fundo e a nova (${escapeHtml(data_avaliacao)}) está desenhada em azul por cima.</strong>`
@@ -1333,9 +1531,9 @@ function renderPersonalResultsView() {
             state.resultsSubTab === 'relatorio' ? 'lg:col-span-12' : 'lg:col-span-7'
           } bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6 print-break">
             <div class="mb-4">
-              <h3 class="text-base sm:text-lg font-extrabold text-navy">Relatório de Notas por Dimensão</h3>
+              <h3 class="text-base sm:text-lg font-extrabold text-navy">Relatório de Notas por ${isComp ? 'Eixo de Competência' : 'Dimensão'}</h3>
               <p class="text-xs text-slate-500 mt-0.5">
-                Consolidação das 10 dimensões da Roda da Saúde Integral${
+                Consolidação dos 10 eixos${
                   hasPrev ? ` comparada com a avaliação anterior (${escapeHtml(avaliacao_anterior.data_avaliacao)})` : ''
                 }.
               </p>
@@ -1344,13 +1542,13 @@ function renderPersonalResultsView() {
               <table class="w-full text-xs sm:text-sm border-collapse">
                 <thead>
                   <tr class="bg-navy text-white text-left">
-                    <th class="py-2.5 px-3 rounded-tl-lg font-bold">Dimensão</th>
+                    <th class="py-2.5 px-3 rounded-tl-lg font-bold">${isComp ? 'Eixo' : 'Dimensão'}</th>
                     <th class="py-2.5 px-2 text-center font-bold">Com nota</th>
                     ${hasPrev ? `<th class="py-2.5 px-2 text-center font-bold">Anterior</th>` : ''}
                     <th class="py-2.5 px-2 text-center font-bold">Média Atual</th>
                     ${hasPrev ? `<th class="py-2.5 px-2 text-center font-bold">Evolução</th>` : ''}
                     <th class="py-2.5 px-2 text-center font-bold">Sem nota</th>
-                    <th class="py-2.5 px-2.5 rounded-tr-lg text-center font-bold">Preenchimento</th>
+                    <th class="py-2.5 px-2.5 rounded-tr-lg text-center font-bold">Situação</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-200">
@@ -1394,7 +1592,7 @@ function renderPersonalResultsView() {
                           <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold ${
                             d.preenchimento === 'Concluída'
                               ? 'bg-emerald-100 text-emerald-800'
-                              : d.preenchimento === 'Parcial'
+                              : d.preenchimento === 'Parcial' || d.preenchimento === 'Em curso'
                               ? 'bg-amber-100 text-amber-800'
                               : 'bg-slate-100 text-slate-600'
                           }">
@@ -1414,6 +1612,13 @@ function renderPersonalResultsView() {
         }
       </div>
 
+      <!-- 2b. Tabela Oficial das 4 Aplicações (Exclusiva do Módulo Roda de Competências) -->
+      ${
+        isComp && (state.resultsSubTab === 'todos' || state.resultsSubTab === 'relatorio' || state.resultsSubTab === 'roda')
+          ? renderQuatroAplicacoesTable()
+          : ''
+      }
+
       <!-- 3. Eletrovitae dos 50 Itens -->
       ${
         state.resultsSubTab === 'todos' || state.resultsSubTab === 'eletrovitae'
@@ -1421,9 +1626,9 @@ function renderPersonalResultsView() {
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6 print-break">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
             <div>
-              <h3 class="text-base sm:text-lg font-extrabold text-navy">Eletrovitae dos 50 Itens</h3>
+              <h3 class="text-base sm:text-lg font-extrabold text-navy">${isComp ? 'Perfil Linear dos 50 Comportamentos (Eletrovitae)' : 'Eletrovitae dos 50 Itens'}</h3>
               <p class="text-xs text-slate-500 mt-0.5">
-                O Eletrovitae contém os 50 itens na ordem do questionário. Para facilitar a leitura, o eixo mostra um rótulo a cada cinco itens.
+                Contém os 50 itens na ordem da avaliação. Para facilitar a leitura, o eixo mostra um rótulo a cada cinco itens.
               </p>
             </div>
             <div class="flex items-center gap-4 text-xs font-semibold shrink-0">
@@ -1431,7 +1636,7 @@ function renderPersonalResultsView() {
                 <span class="w-3 h-3 rounded-full bg-cerulean inline-block"></span> Nota Atual (${escapeHtml(data_avaliacao)})
               </span>
               <span class="inline-flex items-center gap-1.5 text-amberref">
-                <span class="w-4 h-0.5 bg-amberref inline-block"></span> Referência 6 (Assuntos a explorar)
+                <span class="w-4 h-0.5 bg-amberref inline-block"></span> Referência 6
               </span>
             </div>
           </div>
@@ -1451,10 +1656,10 @@ function renderPersonalResultsView() {
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
             <div>
               <h3 class="text-base sm:text-lg font-extrabold text-navy">
-                Assuntos a Explorar / Áreas em Desfalque (Notas ≤ 6)
+                ${isComp ? 'Comportamentos a Desenvolver / Eixos Prioritários (Notas ≤ 6)' : 'Assuntos a Explorar / Áreas em Desfalque (Notas ≤ 6)'}
               </h3>
               <p class="text-xs text-slate-500 mt-0.5">
-                Itens com nota igual ou inferior a 6 entram na seleção de assuntos a explorar para seu Plano de Ação.
+                Itens com nota igual ou inferior a 6 entram na seleção prioritária para o seu Plano de Ação.
               </p>
             </div>
             <button
@@ -1509,6 +1714,7 @@ function renderActionPlanView() {
   const { relatorio_dimensoes, itens } = state.questionnaireData.resultados;
   const deficitDims = getDeficitDimensions();
   const dimsToRender = state.showAllDimsInPlan ? relatorio_dimensoes : deficitDims;
+  const isComp = state.activeModule === 'competencias';
 
   return `
     <div class="space-y-6">
@@ -1516,13 +1722,17 @@ function renderActionPlanView() {
         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
             <span class="px-2.5 py-0.5 rounded bg-amberref text-white text-xs font-bold">
-              Desenvolvimento Pessoal • Roda da Saúde Integral
+              Desenvolvimento Pessoal • ${isComp ? 'Roda de Liderança e Competências' : 'Roda da Saúde Integral'}
             </span>
             <h2 class="text-xl sm:text-2xl font-extrabold text-navy mt-1">
-              🎯 Plano de Ação por Área em Desfalque
+              🎯 Plano de Ação por ${isComp ? 'Eixo Prioritário' : 'Área em Desfalque'}
             </h2>
             <p class="text-xs sm:text-sm text-slate-600 mt-1">
-              Elabore seu plano de ação prático para cada dimensão que apresentou média ou itens com <strong>nota igual ou inferior a 6</strong> (assuntos a explorar).
+              ${
+                isComp
+                  ? 'Escolha os eixos prioritários (média ou comportamentos ≤ 6) e combine uma ação prática, uma meta (nota) e um prazo para a próxima avaliação.'
+                  : 'Elabore seu plano de ação prático para cada dimensão que apresentou média ou itens com <strong>nota igual ou inferior a 6</strong> (assuntos a explorar).'
+              }
             </p>
           </div>
           <div class="flex flex-wrap items-center gap-2.5 no-print">
@@ -1530,7 +1740,7 @@ function renderActionPlanView() {
               id="btn-toggle-all-dims-plan"
               class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-navy font-semibold text-xs border border-slate-300 transition-colors"
             >
-              ${state.showAllDimsInPlan ? 'Mostrar Apenas Áreas em Desfalque (≤ 6)' : 'Mostrar Todas as 10 Dimensões'}
+              ${state.showAllDimsInPlan ? 'Mostrar Apenas Eixos em Desfalque (≤ 6)' : 'Mostrar Todos os 10 Eixos'}
             </button>
             <button
               id="btn-save-action-plan-top"
@@ -1554,13 +1764,13 @@ function renderActionPlanView() {
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 text-center space-y-3">
           <h3 class="text-lg font-bold text-navy">Nenhuma área com nota igual ou inferior a 6 encontrada</h3>
           <p class="text-xs sm:text-sm text-slate-600 max-w-xl mx-auto">
-            Responda ao questionário completo ou clique no botão abaixo caso deseje escrever um plano de ação para qualquer uma das 10 dimensões da Roda da Saúde Integral.
+            Responda à avaliação completa ou clique no botão abaixo caso deseje escrever um plano de ação para qualquer um dos 10 eixos.
           </p>
           <button
             id="btn-enable-all-dims-empty"
             class="px-5 py-2.5 rounded-xl bg-navy hover:bg-navy-light text-white font-bold text-xs shadow"
           >
-            Exibir Todas as 10 Dimensões para Planejamento
+            Exibir Todos os 10 Eixos para Planejamento
           </button>
         </div>
       `
@@ -1574,6 +1784,7 @@ function renderActionPlanView() {
               const plan = state.localActionPlan[d.dimensao] || {
                 objetivo: '',
                 acoes: '',
+                meta_nota: '',
                 prazo: '',
                 status: 'Em andamento',
               };
@@ -1591,11 +1802,11 @@ function renderActionPlanView() {
                       <span class="px-2.5 py-0.5 rounded text-xs font-bold ${
                         isDeficit ? 'bg-amberref text-white' : 'bg-white/20 text-white'
                       }">
-                        ${isDeficit ? '⚠️ Área em Desfalque' : 'Dimensão'}
+                        ${isDeficit ? '⚠️ Eixo Prioritário / Desfalque' : 'Eixo'}
                       </span>
                       <h3 class="text-base sm:text-lg font-extrabold">${escapeHtml(d.dimensao)}</h3>
                       <span class="px-2.5 py-0.5 rounded-full bg-white/15 text-xs font-bold">
-                        Média na Dimensão: ${formatNumber(d.media, 1)} / 10
+                        Média Atual: ${formatNumber(d.media, 1)} / 10
                       </span>
                     </div>
                     <p class="text-xs text-slate-200 mt-1">${escapeHtml(d.o_que_avalia)}</p>
@@ -1614,7 +1825,7 @@ function renderActionPlanView() {
                       ? `
                     <div>
                       <div class="text-xs font-bold uppercase tracking-wider text-amber-900 mb-2">
-                        Indicadores em Desfalque nesta Área (Notas ≤ 6):
+                        Indicadores com Nota ≤ 6 neste Eixo:
                       </div>
                       <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
                         ${lowItems
@@ -1640,7 +1851,7 @@ function renderActionPlanView() {
 
                   <!-- Action Plan Form Fields for this Dimension -->
                   <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 pt-2">
-                    <div class="lg:col-span-5">
+                    <div class="lg:col-span-4">
                       <label class="block text-xs font-bold uppercase tracking-wider text-navy mb-1.5">
                         1. Objetivo de Melhoria nesta Área *
                       </label>
@@ -1648,41 +1859,56 @@ function renderActionPlanView() {
                         data-plan-dim="${escapeHtml(d.dimensao)}"
                         data-plan-field="objetivo"
                         rows="3"
-                        placeholder="O que você deseja melhorar ou alcançar em ${escapeHtml(d.dimensao)} nos próximos 3 meses?"
+                        placeholder="O que você deseja desenvolver em ${escapeHtml(d.dimensao)} nos próximos 3 meses?"
                         class="w-full p-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-cerulean text-xs sm:text-sm bg-amberref-light/25"
                       >${escapeHtml(plan.objetivo || '')}</textarea>
                     </div>
 
                     <div class="lg:col-span-5">
                       <label class="block text-xs font-bold uppercase tracking-wider text-navy mb-1.5">
-                        2. Ações Práticas que Vou Realizar (Como Farei) *
+                        2. Ação Prática que Vou Realizar *
                       </label>
                       <textarea
                         data-plan-dim="${escapeHtml(d.dimensao)}"
                         data-plan-field="acoes"
                         rows="3"
-                        placeholder="Descreva as atitudes práticas, hábitos ou passos concretos que você vai adotar no seu cotidiano..."
+                        placeholder="Descreva as ações práticas, rotinas e comportamentos que você vai aplicar..."
                         class="w-full p-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-cerulean text-xs sm:text-sm bg-amberref-light/25"
                       >${escapeHtml(plan.acoes || '')}</textarea>
                     </div>
 
-                    <div class="lg:col-span-2 flex flex-col justify-between gap-3">
-                      <div>
-                        <label class="block text-xs font-bold uppercase tracking-wider text-navy mb-1.5">
-                          3. Prazo / Meta
-                        </label>
-                        <input
-                          type="text"
-                          data-plan-dim="${escapeHtml(d.dimensao)}"
-                          data-plan-field="prazo"
-                          value="${escapeHtml(plan.prazo || '')}"
-                          placeholder="Ex: 3x por semana / 90 dias"
-                          class="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-cerulean text-xs bg-amberref-light/25"
-                        />
+                    <div class="lg:col-span-3 flex flex-col justify-between gap-2.5">
+                      <div class="grid grid-cols-2 gap-2">
+                        <div>
+                          <label class="block text-[11px] font-bold uppercase tracking-wider text-navy mb-1">
+                            3. Meta (Nota)
+                          </label>
+                          <input
+                            type="text"
+                            data-plan-dim="${escapeHtml(d.dimensao)}"
+                            data-plan-field="meta_nota"
+                            value="${escapeHtml(plan.meta_nota || '')}"
+                            placeholder="Ex: 8,0"
+                            class="w-full px-2.5 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-cerulean text-xs bg-amberref-light/25"
+                          />
+                        </div>
+                        <div>
+                          <label class="block text-[11px] font-bold uppercase tracking-wider text-navy mb-1">
+                            4. Prazo
+                          </label>
+                          <input
+                            type="text"
+                            data-plan-dim="${escapeHtml(d.dimensao)}"
+                            data-plan-field="prazo"
+                            value="${escapeHtml(plan.prazo || '')}"
+                            placeholder="Ex: 90 dias"
+                            class="w-full px-2.5 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-cerulean text-xs bg-amberref-light/25"
+                          />
+                        </div>
                       </div>
                       <div>
-                        <label class="block text-xs font-bold uppercase tracking-wider text-navy mb-1.5">
-                          4. Status
+                        <label class="block text-[11px] font-bold uppercase tracking-wider text-navy mb-1">
+                          5. Status
                         </label>
                         <select
                           data-plan-dim="${escapeHtml(d.dimensao)}"
@@ -1721,11 +1947,71 @@ function renderActionPlanView() {
 }
 
 // ----------------------------------------------------------------------------
-// 7. Tutorial e 10 Eixos View
+// 7. Tutorial e 10 Eixos View (Supports Both Saúde Integral & Competências)
 // ----------------------------------------------------------------------------
 function renderTutorialAndEixosView() {
   if (!state.questionnaireData) return '';
   const { tutorial, eixos } = state.questionnaireData;
+  const isComp = state.activeModule === 'competencias';
+
+  if (isComp) {
+    const tutorialCards = Array.isArray(tutorial) ? tutorial : [];
+    return `
+      <div class="space-y-6">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+          <span class="px-2.5 py-0.5 rounded bg-cerulean text-white text-xs font-bold">Guia Oficial • Aba Critérios</span>
+          <h2 class="text-xl font-extrabold text-navy mt-2">Roda Integrada de Liderança e Competências — Critérios e Funcionamento</h2>
+          <p class="text-xs text-slate-500 mt-0.5">50 comportamentos avaliados em 10 eixos • Acompanhamento em até 4 aplicações trimestrais</p>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5">
+            ${tutorialCards
+              .map(
+                (t) => `
+              <div class="p-4 rounded-xl bg-slatebg border border-slate-200">
+                <div class="text-sm font-bold text-navy">${escapeHtml(t.secao)}</div>
+                <p class="text-xs text-slate-600 mt-1.5 leading-relaxed">${escapeHtml(t.texto)}</p>
+              </div>
+            `
+              )
+              .join('')}
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+          <h3 class="text-lg font-extrabold text-navy mb-1">Os 10 Eixos da Roda Integrada de Liderança e Competências</h3>
+          <p class="text-xs text-slate-500 mb-4">Os eixos reúnem temas próximos das rodas originais (Roda de Liderança e Roda de Competências). Cada eixo possui cinco comportamentos distintos.</p>
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs sm:text-sm border-collapse">
+              <thead>
+                <tr class="bg-navy text-white text-left">
+                  <th class="py-2.5 px-3 font-bold">#</th>
+                  <th class="py-2.5 px-3 font-bold">Eixo</th>
+                  <th class="py-2.5 px-3 font-bold">Temas de Origem</th>
+                  <th class="py-2.5 px-3 font-bold">Rótulo no Radar</th>
+                  <th class="py-2.5 px-3 font-bold text-center">Itens</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-200">
+                ${eixos
+                  .map(
+                    (e) => `
+                  <tr class="hover:bg-slatebg">
+                    <td class="py-3 px-3 font-bold text-slate-500">${e.ordem}</td>
+                    <td class="py-3 px-3 font-bold text-navy">${escapeHtml(e.dimensao)}</td>
+                    <td class="py-3 px-3 text-slate-700">${escapeHtml(e.temas_origem || e.foco || '')}</td>
+                    <td class="py-3 px-3 font-semibold text-cerulean">${escapeHtml(e.rotulo_radar || '')}</td>
+                    <td class="py-3 px-3 text-center font-medium text-slate-600">${escapeHtml(e.itens || '')}</td>
+                  </tr>
+                `
+                  )
+                  .join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    `;
+  }
 
   return `
     <div class="space-y-6">
@@ -1836,6 +2122,7 @@ function renderAdminClassReportView() {
     return `<div class="p-8 text-center text-slate-500">Carregando relatório consolidado da turma...</div>`;
   }
 
+  const isComp = state.activeModule === 'competencias';
   const {
     turma,
     resumo_turma,
@@ -1863,7 +2150,7 @@ function renderAdminClassReportView() {
           <div>
             <div class="flex items-center gap-2 flex-wrap mb-1">
               <span class="px-2.5 py-0.5 rounded bg-navy text-white text-xs font-bold">
-                Painel Docente • Relatório Coletivo por Turma
+                Painel Docente • ${isComp ? 'Roda de Competências da Turma' : 'Roda da Saúde da Turma'}
               </span>
               <span class="px-2.5 py-0.5 rounded bg-emerald-100 text-emerald-800 text-xs font-semibold border border-emerald-300">
                 🔒 Sigilo Individual Ativo (Sem acesso a notas individuais)
@@ -1873,7 +2160,7 @@ function renderAdminClassReportView() {
               ${escapeHtml(turma.cod_turma)} — ${escapeHtml(turma.nome_curso || '')}
             </h2>
             <p class="text-xs text-slate-500 mt-0.5">
-              ${escapeHtml(turma.nome_filial || 'SENAI / FIEMG')} • Período Letivo: ${escapeHtml(turma.periodo_letivo || '2026')} • As respostas pessoais da administradora não entram no cálculo de nenhuma turma.
+              ${escapeHtml(turma.nome_filial || 'SENAI / FIEMG')} • Período Letivo: ${escapeHtml(turma.periodo_letivo || '2026')} • Módulo: <strong>${isComp ? 'Roda Integrada de Liderança e Competências' : 'Roda da Saúde Integral'}</strong>
             </p>
           </div>
 
@@ -1910,13 +2197,13 @@ function renderAdminClassReportView() {
             </div>
           </div>
           <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200">
-            <div class="text-[11px] font-bold uppercase text-emerald-800">Melhor Dimensão Média</div>
+            <div class="text-[11px] font-bold uppercase text-emerald-800">Melhor ${isComp ? 'Eixo Médio' : 'Dimensão Média'}</div>
             <div class="text-base sm:text-lg font-extrabold text-emerald-900 mt-1 truncate">
               ${melhores_dimensoes[0] ? `${escapeHtml(melhores_dimensoes[0].dimensao)} (${formatNumber(melhores_dimensoes[0].media_turma, 2)})` : 'Sem dados'}
             </div>
           </div>
           <div class="p-4 rounded-xl bg-amberref-soft border border-amberref/30">
-            <div class="text-[11px] font-bold uppercase text-amber-900">Pior Dimensão Média (Ponto de Atenção)</div>
+            <div class="text-[11px] font-bold uppercase text-amber-900">Pior ${isComp ? 'Eixo Médio' : 'Dimensão Média'} (Atenção)</div>
             <div class="text-base sm:text-lg font-extrabold text-amber-900 mt-1 truncate">
               ${piores_dimensoes[0] ? `${escapeHtml(piores_dimensoes[0].dimensao)} (${formatNumber(piores_dimensoes[0].media_turma, 2)})` : 'Sem dados'}
             </div>
@@ -1928,9 +2215,9 @@ function renderAdminClassReportView() {
         resumo_turma.total_respondentes === 0
           ? `
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 text-center space-y-2">
-          <h3 class="text-lg font-bold text-navy">Nenhum aluno desta turma respondeu ao questionário ainda</h3>
+          <h3 class="text-lg font-bold text-navy">Nenhum aluno desta turma concluiu ${isComp ? 'a Roda de Competências' : 'a Roda da Saúde'} ainda</h3>
           <p class="text-xs sm:text-sm text-slate-500 max-w-xl mx-auto">
-            Assim que os alunos da turma <strong>${escapeHtml(turma.cod_turma)}</strong> responderem ao questionário, a média de pontuação da turma, os melhores e piores indicadores médios, a Roda da Saúde Coletiva e o Eletrovitae Médio aparecerão automaticamente aqui.
+            Assim que os alunos da turma <strong>${escapeHtml(turma.cod_turma)}</strong> responderem ${isComp ? 'à Autoavaliação de Liderança e Competências' : 'ao questionário da Roda da Saúde Integral'}, o relatório coletivo aparecerá automaticamente aqui.
           </p>
         </div>
       `
@@ -1944,7 +2231,7 @@ function renderAdminClassReportView() {
               <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">Pontos Fortes</span>
             </div>
 
-            <div class="text-xs font-bold uppercase text-slate-500 mb-2">Top 3 Dimensões com Maior Média:</div>
+            <div class="text-xs font-bold uppercase text-slate-500 mb-2">Top 3 ${isComp ? 'Eixos' : 'Dimensões'} com Maior Média:</div>
             <div class="space-y-2 mb-5">
               ${melhores_dimensoes
                 .map(
@@ -1963,7 +2250,7 @@ function renderAdminClassReportView() {
                 .join('')}
             </div>
 
-            <div class="text-xs font-bold uppercase text-slate-500 mb-2">Top 5 Itens do Eletrovitae com Maior Média:</div>
+            <div class="text-xs font-bold uppercase text-slate-500 mb-2">Top 5 ${isComp ? 'Comportamentos' : 'Itens do Eletrovitae'} com Maior Média:</div>
             <div class="space-y-2">
               ${melhores_indicadores
                 .map(
@@ -1991,7 +2278,7 @@ function renderAdminClassReportView() {
               <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amberref-light text-amber-900">Foco de Atenção</span>
             </div>
 
-            <div class="text-xs font-bold uppercase text-slate-500 mb-2">3 Dimensões com Menor Média na Turma:</div>
+            <div class="text-xs font-bold uppercase text-slate-500 mb-2">3 ${isComp ? 'Eixos' : 'Dimensões'} com Menor Média na Turma:</div>
             <div class="space-y-2 mb-5">
               ${piores_dimensoes
                 .map(
@@ -2010,7 +2297,7 @@ function renderAdminClassReportView() {
                 .join('')}
             </div>
 
-            <div class="text-xs font-bold uppercase text-slate-500 mb-2">5 Itens do Eletrovitae com Menor Média na Turma:</div>
+            <div class="text-xs font-bold uppercase text-slate-500 mb-2">5 ${isComp ? 'Comportamentos' : 'Itens do Eletrovitae'} com Menor Média na Turma:</div>
             <div class="space-y-2">
               ${piores_indicadores
                 .map(
@@ -2033,20 +2320,20 @@ function renderAdminClassReportView() {
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <div class="lg:col-span-5 bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6 print-break">
-            <h3 class="text-base sm:text-lg font-extrabold text-navy">Roda da Saúde Média da Turma</h3>
-            <p class="text-xs text-slate-500 mt-0.5">Média coletiva da turma nas 10 dimensões (0 a 10).</p>
+            <h3 class="text-base sm:text-lg font-extrabold text-navy">${isComp ? 'Roda de Competências Média da Turma' : 'Roda da Saúde Média da Turma'}</h3>
+            <p class="text-xs text-slate-500 mt-0.5">Média coletiva da turma nos 10 eixos (0 a 10).</p>
             <div class="relative w-full max-w-md mx-auto my-4" style="min-height: 330px;">
               <canvas id="chart-admin-radar"></canvas>
             </div>
           </div>
 
           <div class="lg:col-span-7 bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6 print-break">
-            <h3 class="text-base sm:text-lg font-extrabold text-navy mb-3">Média da Turma por Dimensão (10 Eixos)</h3>
+            <h3 class="text-base sm:text-lg font-extrabold text-navy mb-3">Média da Turma por ${isComp ? 'Eixo de Competência' : 'Dimensão'} (10 Eixos)</h3>
             <div class="overflow-x-auto">
               <table class="w-full text-xs sm:text-sm border-collapse">
                 <thead>
                   <tr class="bg-navy text-white text-left">
-                    <th class="py-2.5 px-3 rounded-tl-lg font-bold">Dimensão</th>
+                    <th class="py-2.5 px-3 rounded-tl-lg font-bold">${isComp ? 'Eixo de Competência' : 'Dimensão'}</th>
                     <th class="py-2.5 px-2.5 text-center font-bold">Média da Turma</th>
                     <th class="py-2.5 px-2.5 text-center font-bold">Alunos c/ Nota</th>
                     <th class="py-2.5 px-3 rounded-tr-lg text-center font-bold">% Respostas ≤ 6</th>
@@ -2084,9 +2371,9 @@ function renderAdminClassReportView() {
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6 print-break">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
             <div>
-              <h3 class="text-base sm:text-lg font-extrabold text-navy">Eletrovitae Médio da Turma (50 Indicadores)</h3>
+              <h3 class="text-base sm:text-lg font-extrabold text-navy">${isComp ? 'Curva Coletiva dos 50 Comportamentos da Turma' : 'Eletrovitae Médio da Turma (50 Indicadores)'}</h3>
               <p class="text-xs text-slate-500 mt-0.5">
-                Pontuação média coletiva da turma em cada um dos 50 itens do questionário, comparada à linha de Referência 6.
+                Pontuação média coletiva da turma em cada um dos 50 itens, comparada à linha de Referência 6.
               </p>
             </div>
           </div>
@@ -2170,7 +2457,7 @@ function renderAdminUsersAndUploadView() {
                       <div class="font-extrabold text-navy">${escapeHtml(t.cod_turma)}</div>
                       <div class="text-[11px] text-slate-600">${escapeHtml(t.nome_curso || '')}</div>
                       <div class="text-[11px] text-cerulean font-semibold mt-0.5">
-                        ${t.total_alunos} alunos • ${t.questionarios_concluidos} concluídos
+                        ${t.total_alunos} alunos • 🌿 Saúde: ${t.questionarios_concluidos} • 🎯 Comp.: ${t.competencias_concluidos || 0}
                       </div>
                     </div>
                     <button
@@ -2235,7 +2522,7 @@ function renderAdminUsersAndUploadView() {
               Gestão de Alunos, Respostas e Autorizações (${filteredUsers.length} alunos)
             </h3>
             <p class="text-xs text-slate-500">
-              Gerencie a liberação de acesso, redefina senhas, resete respostas ou remova alunos. Conforme as regras de privacidade, nenhuma nota individual é exibida.
+              Gerencie a liberação de acesso, redefina senhas, resete respostas (Saúde ou Competências) ou remova alunos. Conforme as regras de privacidade, nenhuma nota individual é exibida.
             </p>
           </div>
           <div class="flex flex-wrap items-center gap-2">
@@ -2260,7 +2547,7 @@ function renderAdminUsersAndUploadView() {
                 <th class="py-2.5 px-3 font-bold">E-mail (Login)</th>
                 <th class="py-2.5 px-2.5 font-bold">Turma</th>
                 <th class="py-2.5 px-2.5 text-center font-bold">Acesso</th>
-                <th class="py-2.5 px-2.5 text-center font-bold">Questionário / Data</th>
+                <th class="py-2.5 px-2.5 text-center font-bold">🌿 Saúde / 🎯 Competências</th>
                 <th class="py-2.5 px-3 rounded-tr-lg text-right font-bold">Ações do Admin</th>
               </tr>
             </thead>
@@ -2282,15 +2569,25 @@ function renderAdminUsersAndUploadView() {
                         : `<span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-200 text-amber-900">Pendente / Bloqueado</span>`
                     }
                   </td>
-                  <td class="py-2.5 px-2.5 text-center">
-                    ${
-                      u.questionario_concluido
-                        ? `<span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-cerulean-light text-navy block">Respondido (${u.qtd_avaliacoes || 1}x)</span>
-                           <span class="text-[10px] text-slate-500">${escapeHtml(u.data_ultima_resposta || '')}</span>`
-                        : u.tem_respostas
-                        ? `<span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-100 text-amber-800">Rascunho</span>`
-                        : `<span class="px-2 py-0.5 rounded text-[11px] text-slate-400">Pendente</span>`
-                    }
+                  <td class="py-2.5 px-2.5 text-center space-y-1">
+                    <div>
+                      ${
+                        u.questionario_concluido
+                          ? `<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-cerulean-light text-navy inline-block">🌿 Saúde: ${u.qtd_avaliacoes || 1}x (${escapeHtml(u.data_ultima_resposta || '')})</span>`
+                          : u.tem_respostas
+                          ? `<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-800 inline-block">🌿 Saúde: Rascunho</span>`
+                          : `<span class="px-2 py-0.5 rounded text-[10px] text-slate-400 inline-block">🌿 Saúde: Pendente</span>`
+                      }
+                    </div>
+                    <div>
+                      ${
+                        u.competencias_concluido
+                          ? `<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-amberref-light text-amber-900 inline-block">🎯 Comp.: ${u.qtd_competencias || 1}x (${escapeHtml(u.data_ultima_competencia || '')})</span>`
+                          : u.tem_respostas_competencias
+                          ? `<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-800 inline-block">🎯 Comp.: Rascunho</span>`
+                          : `<span class="px-2 py-0.5 rounded text-[10px] text-slate-400 inline-block">🎯 Comp.: Pendente</span>`
+                      }
+                    </div>
                   </td>
                   <td class="py-2.5 px-3 text-right whitespace-nowrap space-x-1">
                     <button
@@ -2315,9 +2612,17 @@ function renderAdminUsersAndUploadView() {
                       data-reset-assessment="${u.id}"
                       data-user-name="${escapeHtml(u.nome)}"
                       class="px-2 py-1 rounded-lg text-[11px] font-semibold bg-sky-100 hover:bg-sky-200 text-sky-900 border border-sky-300"
-                      title="Resetar respostas do questionário deste aluno"
+                      title="Resetar respostas da Roda da Saúde deste aluno"
                     >
-                      🔄 Resetar Resposta
+                      🔄 Resetar Saúde
+                    </button>
+                    <button
+                      data-reset-competencias="${u.id}"
+                      data-user-name="${escapeHtml(u.nome)}"
+                      class="px-2 py-1 rounded-lg text-[11px] font-semibold bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300"
+                      title="Resetar respostas da Roda de Competências deste aluno"
+                    >
+                      🔄 Resetar Comp.
                     </button>
                     <button
                       data-delete-user="${u.id}"
@@ -2356,6 +2661,32 @@ function bindMainEvents() {
     };
   }
 
+  // Module Switcher Buttons (Saúde Integral vs Liderança e Competências)
+  document.querySelectorAll('[data-switch-module]').forEach((btn) => {
+    btn.onclick = async () => {
+      const targetMod = btn.getAttribute('data-switch-module');
+      if (targetMod === state.activeModule) return;
+      state.activeModule = targetMod;
+      state.selectedDimFilter = 'todas';
+      state.novaAvaliacaoMode = false;
+      state.openExamples = {};
+      await loadQuestionnaireData();
+      if (state.user.role === 'admin' && state.activeTab === 'admin_relatorio') {
+        await loadAdminReport();
+      }
+      render();
+    };
+  });
+
+  // Cargo / Área input for Roda de Competências
+  const cargoInput = document.getElementById('comp-cargo-area');
+  if (cargoInput) {
+    cargoInput.oninput = (e) => {
+      state.localCargoArea = e.target.value;
+      state.unsavedChanges = true;
+    };
+  }
+
   // Start new wheel evaluation button (from top trimestral banner)
   const btnStartNewWheel = document.getElementById('btn-start-new-wheel');
   if (btnStartNewWheel) {
@@ -2363,7 +2694,9 @@ function bindMainEvents() {
       state.novaAvaliacaoMode = true;
       state.activeTab = 'questionario';
       showToast(
-        'Modo de Nova Avaliação ativado! Ao finalizar, sua última Roda da Saúde ficará como sombreado no fundo.',
+        state.activeModule === 'competencias'
+          ? 'Modo de Nova Aplicação ativado! Ao finalizar, a avaliação entrará no histórico das 4 aplicações e a roda anterior ficará sombreada no fundo.'
+          : 'Modo de Nova Avaliação ativado! Ao finalizar, sua última Roda da Saúde ficará como sombreado no fundo.',
         'info'
       );
       render();
@@ -2402,7 +2735,7 @@ function bindMainEvents() {
     };
   }
 
-  // Score buttons (1..10)
+  // Score buttons (0..10 for Competências, 1..10 for Saúde)
   document.querySelectorAll('[data-score]').forEach((btn) => {
     btn.onclick = () => {
       const qnum = String(btn.getAttribute('data-qnum'));
@@ -2444,17 +2777,21 @@ function bindMainEvents() {
 
   // Save draft & Finalize buttons
   const saveDraftHandler = async () => {
+    const isComp = state.activeModule === 'competencias';
+    const saveEndpoint = isComp ? '/api/competencias/save' : '/api/questionnaire/save';
     try {
-      const res = await apiFetch('/api/questionnaire/save', {
+      const res = await apiFetch(saveEndpoint, {
         method: 'POST',
         body: JSON.stringify({
           respostas: state.localAnswers,
+          cargo_area: state.localCargoArea,
           finalizar: false,
           nova_avaliacao: false,
         }),
       });
       state.questionnaireData = res;
       state.localAnswers = JSON.parse(JSON.stringify(res.respostas || {}));
+      if (isComp) state.localCargoArea = res.cargo_area || '';
       state.unsavedChanges = false;
       showToast(res.message, 'success');
       render();
@@ -2464,17 +2801,21 @@ function bindMainEvents() {
   };
 
   const finalizeHandler = async () => {
+    const isComp = state.activeModule === 'competencias';
+    const saveEndpoint = isComp ? '/api/competencias/save' : '/api/questionnaire/save';
     try {
-      const res = await apiFetch('/api/questionnaire/save', {
+      const res = await apiFetch(saveEndpoint, {
         method: 'POST',
         body: JSON.stringify({
           respostas: state.localAnswers,
+          cargo_area: state.localCargoArea,
           finalizar: true,
           nova_avaliacao: state.novaAvaliacaoMode || state.questionnaireData?.concluido,
         }),
       });
       state.questionnaireData = res;
       state.localAnswers = JSON.parse(JSON.stringify(res.respostas || {}));
+      if (isComp) state.localCargoArea = res.cargo_area || '';
       state.novaAvaliacaoMode = false;
       state.unsavedChanges = false;
       state.activeTab = 'resultados';
@@ -2559,8 +2900,10 @@ function bindMainEvents() {
   }
 
   const savePlanHandler = async () => {
+    const isComp = state.activeModule === 'competencias';
+    const planEndpoint = isComp ? '/api/competencias/action-plan' : '/api/questionnaire/action-plan';
     try {
-      const res = await apiFetch('/api/questionnaire/action-plan', {
+      const res = await apiFetch(planEndpoint, {
         method: 'POST',
         body: JSON.stringify({ plano_acao: state.localActionPlan }),
       });
@@ -2727,20 +3070,46 @@ function bindMainEvents() {
     };
   });
 
-  // Reset Student Assessment Responses
+  // Reset Student Saúde Integral Responses
   document.querySelectorAll('[data-reset-assessment]').forEach((btn) => {
     btn.onclick = async () => {
       const uid = btn.getAttribute('data-reset-assessment');
       const uname = btn.getAttribute('data-user-name');
       if (
         !window.confirm(
-          `Deseja realmente RESETAR todas as respostas do questionário, histórico de rodas e plano de ação de "${uname}"?`
+          `Deseja realmente RESETAR todas as respostas da Roda da Saúde Integral, histórico e plano de ação de "${uname}"?`
         )
       ) {
         return;
       }
       try {
         const res = await apiFetch(`/api/admin/users/${uid}/reset-assessment`, {
+          method: 'POST',
+        });
+        showToast(res.message, 'success');
+        await loadAdminTurmasAndUsers();
+        await loadAdminReport();
+        render();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    };
+  });
+
+  // Reset Student Roda de Competências Responses
+  document.querySelectorAll('[data-reset-competencias]').forEach((btn) => {
+    btn.onclick = async () => {
+      const uid = btn.getAttribute('data-reset-competencias');
+      const uname = btn.getAttribute('data-user-name');
+      if (
+        !window.confirm(
+          `Deseja realmente RESETAR todas as respostas da Roda de Liderança e Competências, histórico das 4 aplicações e plano de ação de "${uname}"?`
+        )
+      ) {
+        return;
+      }
+      try {
+        const res = await apiFetch(`/api/admin/users/${uid}/reset-competencias`, {
           method: 'POST',
         });
         showToast(res.message, 'success');

@@ -1,0 +1,507 @@
+{
+  "titulo": "Roda Integrada de Liderança e Competências",
+  "subtitulo": "50 perguntas em 10 eixos. Quatro aplicações para acompanhar a evolução.",
+  "instrucao_escala": "Considere os últimos três meses. 0 = não demonstro. 5 = demonstro com alguma regularidade. 10 = demonstro de forma consistente.",
+  "questions": [
+    {
+      "numero": 1,
+      "dimensao": "Trabalho, liderança e desenvolvimento de equipes",
+      "rotulo_curto": "Liderança de equipes",
+      "rotulo_radar": "Equipes",
+      "pergunta": "Explico como o trabalho da equipe contribui para um objetivo comum.",
+      "exemplos": "Eixo: Trabalho, liderança e desenvolvimento de equipes (Inspirar, colaborar, liderar e desenvolver equipes). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "numero": 2,
+      "dimensao": "Trabalho, liderança e desenvolvimento de equipes",
+      "rotulo_curto": "Liderança de equipes",
+      "rotulo_radar": "Equipes",
+      "pergunta": "Faço a minha parte nas entregas que dependem de várias pessoas.",
+      "exemplos": "Eixo: Trabalho, liderança e desenvolvimento de equipes (Inspirar, colaborar, liderar e desenvolver equipes). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "numero": 3,
+      "dimensao": "Trabalho, liderança e desenvolvimento de equipes",
+      "rotulo_curto": "Liderança de equipes",
+      "rotulo_radar": "Equipes",
+      "pergunta": "Esclareço quem é responsável por cada parte de uma entrega coletiva.",
+      "exemplos": "Eixo: Trabalho, liderança e desenvolvimento de equipes (Inspirar, colaborar, liderar e desenvolver equipes). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "numero": 4,
+      "dimensao": "Trabalho, liderança e desenvolvimento de equipes",
+      "rotulo_curto": "Liderança de equipes",
+      "rotulo_radar": "Equipes",
+      "pergunta": "Crio oportunidades para colegas praticarem novas habilidades.",
+      "exemplos": "Eixo: Trabalho, liderança e desenvolvimento de equipes (Inspirar, colaborar, liderar e desenvolver equipes). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "numero": 5,
+      "dimensao": "Trabalho, liderança e desenvolvimento de equipes",
+      "rotulo_curto": "Liderança de equipes",
+      "rotulo_radar": "Equipes",
+      "pergunta": "Acompanho a evolução das pessoas nas habilidades que estão desenvolvendo.",
+      "exemplos": "Eixo: Trabalho, liderança e desenvolvimento de equipes (Inspirar, colaborar, liderar e desenvolver equipes). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "numero": 6,
+      "dimensao": "Delegação e feedback",
+      "rotulo_curto": "Delegação e feedback",
+      "rotulo_radar": "Delegação e feedback",
+      "pergunta": "Delego tarefas conforme a experiência e a disponibilidade da pessoa.",
+      "exemplos": "Eixo: Delegação e feedback (Delegar e dar feedback). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "numero": 7,
+      "dimensao": "Delegação e feedback",
+      "rotulo_curto": "Delegação e feedback",
+      "rotulo_radar": "Delegação e feedback",
+      "pergunta": "Combino o resultado esperado e o grau de autonomia ao delegar.",
+      "exemplos": "Eixo: Delegação e feedback (Delegar e dar feedback). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "numero": 8,
+      "dimensao": "Delegação e feedback",
+      "rotulo_curto": "Delegação e feedback",
+      "rotulo_radar": "Delegação e feedback",
+      "pergunta": "Dou feedback com exemplos de comportamentos que observei.",
+      "exemplos": "Eixo: Delegação e feedback (Delegar e dar feedback). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "numero": 9,
+      "dimensao": "Delegação e feedback",
+      "rotulo_curto": "Delegação e feedback",
+      "rotulo_radar": "Delegação e feedback",
+      "pergunta": "Escuto a perspectiva da pessoa ao conversar sobre seu desempenho.",
+      "exemplos": "Eixo: Delegação e feedback (Delegar e dar feedback). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "numero": 10,
+      "dimensao": "Delegação e feedback",
+      "rotulo_curto": "Delegação e feedback",
+      "rotulo_radar": "Delegação e feedback",
+      "pergunta": "Combino um próximo passo depois de dar feedback de melhoria.",
+      "exemplos": "Eixo: Delegação e feedback (Delegar e dar feedback). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "numero": 11,
+      "dimensao": "Gestão do tempo e prioridades",
+      "rotulo_curto": "Gestão do tempo",
+      "rotulo_radar": "Gestão do tempo",
+      "pergunta": "Defino minhas prioridades antes de organizar a agenda.",
+      "exemplos": "Eixo: Gestão do tempo e prioridades (Foco e priorização, com gestão do tempo). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "numero": 12,
+      "dimensao": "Gestão do tempo e prioridades",
+      "rotulo_curto": "Gestão do tempo",
+      "rotulo_radar": "Gestão do tempo",
+      "pergunta": "Reservo na agenda o tempo necessário para as entregas mais importantes.",
+      "exemplos": "Eixo: Gestão do tempo e prioridades (Foco e priorização, com gestão do tempo). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "numero": 13,
+      "dimensao": "Gestão do tempo e prioridades",
+      "rotulo_curto": "Gestão do tempo",
+      "rotulo_radar": "Gestão do tempo",
+      "pergunta": "Estimo quanto tempo uma tarefa vai exigir antes de assumir um prazo.",
+      "exemplos": "Eixo: Gestão do tempo e prioridades (Foco e priorização, com gestão do tempo). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "numero": 14,
+      "dimensao": "Gestão do tempo e prioridades",
+      "rotulo_curto": "Gestão do tempo",
+      "rotulo_radar": "Gestão do tempo",
+      "pergunta": "Reduzo interrupções quando preciso me concentrar.",
+      "exemplos": "Eixo: Gestão do tempo e prioridades (Foco e priorização, com gestão do tempo). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "numero": 15,
+      "dimensao": "Gestão do tempo e prioridades",
+      "rotulo_curto": "Gestão do tempo",
+      "rotulo_radar": "Gestão do tempo",
+      "pergunta": "Renegocio prazos quando as demandas superam o tempo disponível.",
+      "exemplos": "Eixo: Gestão do tempo e prioridades (Foco e priorização, com gestão do tempo). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "numero": 16,
+      "dimensao": "Resultados e foco no cliente",
+      "rotulo_curto": "Resultados e cliente",
+      "rotulo_radar": "Resultados e cliente",
+      "pergunta": "Investigo o que o cliente precisa antes de propor uma solução.",
+      "exemplos": "Eixo: Resultados e foco no cliente (Orientação para resultados e para o cliente). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "numero": 17,
+      "dimensao": "Resultados e foco no cliente",
+      "rotulo_curto": "Resultados e cliente",
+      "rotulo_radar": "Resultados e cliente",
+      "pergunta": "Combino com o cliente o que a entrega precisa atender.",
+      "exemplos": "Eixo: Resultados e foco no cliente (Orientação para resultados e para o cliente). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "numero": 18,
+      "dimensao": "Resultados e foco no cliente",
+      "rotulo_curto": "Resultados e cliente",
+      "rotulo_radar": "Resultados e cliente",
+      "pergunta": "Acompanho um indicador para saber se a entrega avança como esperado.",
+      "exemplos": "Eixo: Resultados e foco no cliente (Orientação para resultados e para o cliente). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "numero": 19,
+      "dimensao": "Resultados e foco no cliente",
+      "rotulo_curto": "Resultados e cliente",
+      "rotulo_radar": "Resultados e cliente",
+      "pergunta": "Corrijo desvios que ameaçam o resultado combinado.",
+      "exemplos": "Eixo: Resultados e foco no cliente (Orientação para resultados e para o cliente). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "numero": 20,
+      "dimensao": "Resultados e foco no cliente",
+      "rotulo_curto": "Resultados e cliente",
+      "rotulo_radar": "Resultados e cliente",
+      "pergunta": "Verifico com o cliente se a entrega resolveu a necessidade apresentada.",
+      "exemplos": "Eixo: Resultados e foco no cliente (Orientação para resultados e para o cliente). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "numero": 21,
+      "dimensao": "Comunicação e relacionamento",
+      "rotulo_curto": "Comunicação e relações",
+      "rotulo_radar": "Comunicação",
+      "pergunta": "Organizo minhas ideias para que a mensagem seja fácil de entender.",
+      "exemplos": "Eixo: Comunicação e relacionamento (Comunicação e relacionamento interpessoal). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "numero": 22,
+      "dimensao": "Comunicação e relacionamento",
+      "rotulo_curto": "Comunicação e relações",
+      "rotulo_radar": "Comunicação",
+      "pergunta": "Adapto minha linguagem ao público com quem converso.",
+      "exemplos": "Eixo: Comunicação e relacionamento (Comunicação e relacionamento interpessoal). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "numero": 23,
+      "dimensao": "Comunicação e relacionamento",
+      "rotulo_curto": "Comunicação e relações",
+      "rotulo_radar": "Comunicação",
+      "pergunta": "Escuto a outra pessoa até entender seu ponto de vista.",
+      "exemplos": "Eixo: Comunicação e relacionamento (Comunicação e relacionamento interpessoal). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "numero": 24,
+      "dimensao": "Comunicação e relacionamento",
+      "rotulo_curto": "Comunicação e relações",
+      "rotulo_radar": "Comunicação",
+      "pergunta": "Confirmo o entendimento de informações que afetam o trabalho.",
+      "exemplos": "Eixo: Comunicação e relacionamento (Comunicação e relacionamento interpessoal). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "numero": 25,
+      "dimensao": "Comunicação e relacionamento",
+      "rotulo_curto": "Comunicação e relações",
+      "rotulo_radar": "Comunicação",
+      "pergunta": "Abordo divergências diretamente e com respeito.",
+      "exemplos": "Eixo: Comunicação e relacionamento (Comunicação e relacionamento interpessoal). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "numero": 26,
+      "dimensao": "Inteligência emocional",
+      "rotulo_curto": "Inteligência emocional",
+      "rotulo_radar": "Inteligência emocional",
+      "pergunta": "Reconheço as emoções que influenciam minhas decisões no trabalho.",
+      "exemplos": "Eixo: Inteligência emocional (Novo eixo). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "numero": 27,
+      "dimensao": "Inteligência emocional",
+      "rotulo_curto": "Inteligência emocional",
+      "rotulo_radar": "Inteligência emocional",
+      "pergunta": "Faço uma pausa antes de reagir sob pressão.",
+      "exemplos": "Eixo: Inteligência emocional (Novo eixo). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "numero": 28,
+      "dimensao": "Inteligência emocional",
+      "rotulo_curto": "Inteligência emocional",
+      "rotulo_radar": "Inteligência emocional",
+      "pergunta": "Expresso meu incômodo sem atacar a outra pessoa.",
+      "exemplos": "Eixo: Inteligência emocional (Novo eixo). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "numero": 29,
+      "dimensao": "Inteligência emocional",
+      "rotulo_curto": "Inteligência emocional",
+      "rotulo_radar": "Inteligência emocional",
+      "pergunta": "Procuro entender como uma situação afeta emocionalmente os colegas.",
+      "exemplos": "Eixo: Inteligência emocional (Novo eixo). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "numero": 30,
+      "dimensao": "Inteligência emocional",
+      "rotulo_curto": "Inteligência emocional",
+      "rotulo_radar": "Inteligência emocional",
+      "pergunta": "Retomo minhas atividades depois de lidar com uma frustração.",
+      "exemplos": "Eixo: Inteligência emocional (Novo eixo). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "numero": 31,
+      "dimensao": "Flexibilidade e adaptabilidade",
+      "rotulo_curto": "Flexibilidade e adaptação",
+      "rotulo_radar": "Flexibilidade e adaptação",
+      "pergunta": "Reconsidero uma decisão quando recebo informações novas.",
+      "exemplos": "Eixo: Flexibilidade e adaptabilidade (Novo eixo). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "numero": 32,
+      "dimensao": "Flexibilidade e adaptabilidade",
+      "rotulo_curto": "Flexibilidade e adaptação",
+      "rotulo_radar": "Flexibilidade e adaptação",
+      "pergunta": "Ajusto minha forma de trabalhar diante de imprevistos.",
+      "exemplos": "Eixo: Flexibilidade e adaptabilidade (Novo eixo). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "numero": 33,
+      "dimensao": "Flexibilidade e adaptabilidade",
+      "rotulo_curto": "Flexibilidade e adaptação",
+      "rotulo_radar": "Flexibilidade e adaptação",
+      "pergunta": "Adapto meu papel na equipe quando as responsabilidades mudam.",
+      "exemplos": "Eixo: Flexibilidade e adaptabilidade (Novo eixo). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "numero": 34,
+      "dimensao": "Flexibilidade e adaptabilidade",
+      "rotulo_curto": "Flexibilidade e adaptação",
+      "rotulo_radar": "Flexibilidade e adaptação",
+      "pergunta": "Aprendo o necessário para atuar em uma situação nova.",
+      "exemplos": "Eixo: Flexibilidade e adaptabilidade (Novo eixo). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "numero": 35,
+      "dimensao": "Flexibilidade e adaptabilidade",
+      "rotulo_curto": "Flexibilidade e adaptação",
+      "rotulo_radar": "Flexibilidade e adaptação",
+      "pergunta": "Ajudo a equipe a entender o que muda na prática durante uma transição.",
+      "exemplos": "Eixo: Flexibilidade e adaptabilidade (Novo eixo). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "numero": 36,
+      "dimensao": "Iniciativa e empreendedorismo",
+      "rotulo_curto": "Iniciativa e empreendedorismo",
+      "rotulo_radar": "Iniciativa e empreendedorismo",
+      "pergunta": "Identifico oportunidades de gerar valor na minha área.",
+      "exemplos": "Eixo: Iniciativa e empreendedorismo (Iniciativa, empreendedorismo e ousadia). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "numero": 37,
+      "dimensao": "Iniciativa e empreendedorismo",
+      "rotulo_curto": "Iniciativa e empreendedorismo",
+      "rotulo_radar": "Iniciativa e empreendedorismo",
+      "pergunta": "Tomo providências dentro da minha autonomia sem esperar um pedido.",
+      "exemplos": "Eixo: Iniciativa e empreendedorismo (Iniciativa, empreendedorismo e ousadia). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "numero": 38,
+      "dimensao": "Iniciativa e empreendedorismo",
+      "rotulo_curto": "Iniciativa e empreendedorismo",
+      "rotulo_radar": "Iniciativa e empreendedorismo",
+      "pergunta": "Transformo uma oportunidade em uma proposta que pode ser executada.",
+      "exemplos": "Eixo: Iniciativa e empreendedorismo (Iniciativa, empreendedorismo e ousadia). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "numero": 39,
+      "dimensao": "Iniciativa e empreendedorismo",
+      "rotulo_curto": "Iniciativa e empreendedorismo",
+      "rotulo_radar": "Iniciativa e empreendedorismo",
+      "pergunta": "Avalio riscos antes de assumir um desafio novo.",
+      "exemplos": "Eixo: Iniciativa e empreendedorismo (Iniciativa, empreendedorismo e ousadia). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "numero": 40,
+      "dimensao": "Iniciativa e empreendedorismo",
+      "rotulo_curto": "Iniciativa e empreendedorismo",
+      "rotulo_radar": "Iniciativa e empreendedorismo",
+      "pergunta": "Mobilizo pessoas ou recursos para colocar uma proposta em prática.",
+      "exemplos": "Eixo: Iniciativa e empreendedorismo (Iniciativa, empreendedorismo e ousadia). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "numero": 41,
+      "dimensao": "Criatividade e inovação",
+      "rotulo_curto": "Criatividade e inovação",
+      "rotulo_radar": "Criatividade e inovação",
+      "pergunta": "Formulo o problema de outra maneira quando a solução habitual não funciona.",
+      "exemplos": "Eixo: Criatividade e inovação (Criatividade e inovação). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "numero": 42,
+      "dimensao": "Criatividade e inovação",
+      "rotulo_curto": "Criatividade e inovação",
+      "rotulo_radar": "Criatividade e inovação",
+      "pergunta": "Gero mais de uma alternativa antes de escolher uma solução.",
+      "exemplos": "Eixo: Criatividade e inovação (Criatividade e inovação). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "numero": 43,
+      "dimensao": "Criatividade e inovação",
+      "rotulo_curto": "Criatividade e inovação",
+      "rotulo_radar": "Criatividade e inovação",
+      "pergunta": "Transformo uma ideia em um teste de pequena escala.",
+      "exemplos": "Eixo: Criatividade e inovação (Criatividade e inovação). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "numero": 44,
+      "dimensao": "Criatividade e inovação",
+      "rotulo_curto": "Criatividade e inovação",
+      "rotulo_radar": "Criatividade e inovação",
+      "pergunta": "Uso o resultado do teste para aperfeiçoar a solução.",
+      "exemplos": "Eixo: Criatividade e inovação (Criatividade e inovação). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "numero": 45,
+      "dimensao": "Criatividade e inovação",
+      "rotulo_curto": "Criatividade e inovação",
+      "rotulo_radar": "Criatividade e inovação",
+      "pergunta": "Incorporo ao trabalho as melhorias que demonstraram resultado.",
+      "exemplos": "Eixo: Criatividade e inovação (Criatividade e inovação). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "numero": 46,
+      "dimensao": "Visão de futuro",
+      "rotulo_curto": "Visão de futuro",
+      "rotulo_radar": "Visão de futuro",
+      "pergunta": "Acompanho tendências que podem afetar minha área de atuação.",
+      "exemplos": "Eixo: Visão de futuro (Visão de futuro). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "numero": 47,
+      "dimensao": "Visão de futuro",
+      "rotulo_curto": "Visão de futuro",
+      "rotulo_radar": "Visão de futuro",
+      "pergunta": "Identifico riscos futuros que merecem atenção desde já.",
+      "exemplos": "Eixo: Visão de futuro (Visão de futuro). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "numero": 48,
+      "dimensao": "Visão de futuro",
+      "rotulo_curto": "Visão de futuro",
+      "rotulo_radar": "Visão de futuro",
+      "pergunta": "Defino onde quero que meu trabalho chegue no longo prazo.",
+      "exemplos": "Eixo: Visão de futuro (Visão de futuro). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "numero": 49,
+      "dimensao": "Visão de futuro",
+      "rotulo_curto": "Visão de futuro",
+      "rotulo_radar": "Visão de futuro",
+      "pergunta": "Considero as consequências de longo prazo nas decisões do dia a dia.",
+      "exemplos": "Eixo: Visão de futuro (Visão de futuro). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "numero": 50,
+      "dimensao": "Visão de futuro",
+      "rotulo_curto": "Visão de futuro",
+      "rotulo_radar": "Visão de futuro",
+      "pergunta": "Identifico as habilidades necessárias para atingir objetivos futuros.",
+      "exemplos": "Eixo: Visão de futuro (Visão de futuro). Escala: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    }
+  ],
+  "eixos": [
+    {
+      "ordem": 1,
+      "dimensao": "Trabalho, liderança e desenvolvimento de equipes",
+      "rotulo_radar": "Equipes",
+      "temas_origem": "Inspirar, colaborar, liderar e desenvolver equipes",
+      "itens": "1 a 5",
+      "foco": "Inspirar, colaborar, liderar e desenvolver equipes"
+    },
+    {
+      "ordem": 2,
+      "dimensao": "Delegação e feedback",
+      "rotulo_radar": "Delegação e feedback",
+      "temas_origem": "Delegar e dar feedback",
+      "itens": "6 a 10",
+      "foco": "Delegar e dar feedback"
+    },
+    {
+      "ordem": 3,
+      "dimensao": "Gestão do tempo e prioridades",
+      "rotulo_radar": "Gestão do tempo",
+      "temas_origem": "Foco e priorização, com gestão do tempo",
+      "itens": "11 a 15",
+      "foco": "Foco e priorização, com gestão do tempo"
+    },
+    {
+      "ordem": 4,
+      "dimensao": "Resultados e foco no cliente",
+      "rotulo_radar": "Resultados e cliente",
+      "temas_origem": "Orientação para resultados e para o cliente",
+      "itens": "16 a 20",
+      "foco": "Orientação para resultados e para o cliente"
+    },
+    {
+      "ordem": 5,
+      "dimensao": "Comunicação e relacionamento",
+      "rotulo_radar": "Comunicação",
+      "temas_origem": "Comunicação e relacionamento interpessoal",
+      "itens": "21 a 25",
+      "foco": "Comunicação e relacionamento interpessoal"
+    },
+    {
+      "ordem": 6,
+      "dimensao": "Inteligência emocional",
+      "rotulo_radar": "Inteligência emocional",
+      "temas_origem": "Novo eixo",
+      "itens": "26 a 30",
+      "foco": "Novo eixo"
+    },
+    {
+      "ordem": 7,
+      "dimensao": "Flexibilidade e adaptabilidade",
+      "rotulo_radar": "Flexibilidade e adaptação",
+      "temas_origem": "Novo eixo",
+      "itens": "31 a 35",
+      "foco": "Novo eixo"
+    },
+    {
+      "ordem": 8,
+      "dimensao": "Iniciativa e empreendedorismo",
+      "rotulo_radar": "Iniciativa e empreendedorismo",
+      "temas_origem": "Iniciativa, empreendedorismo e ousadia",
+      "itens": "36 a 40",
+      "foco": "Iniciativa, empreendedorismo e ousadia"
+    },
+    {
+      "ordem": 9,
+      "dimensao": "Criatividade e inovação",
+      "rotulo_radar": "Criatividade e inovação",
+      "temas_origem": "Criatividade e inovação",
+      "itens": "41 a 45",
+      "foco": "Criatividade e inovação"
+    },
+    {
+      "ordem": 10,
+      "dimensao": "Visão de futuro",
+      "rotulo_radar": "Visão de futuro",
+      "temas_origem": "Visão de futuro",
+      "itens": "46 a 50",
+      "foco": "Visão de futuro"
+    }
+  ],
+  "tutorial": [
+    {
+      "secao": "Objetivo",
+      "texto": "Roda integrada de liderança e competências: 50 comportamentos avaliados em 10 eixos, com acompanhamento de evolução ao longo de até 4 aplicações (sugestão: a cada 3 meses)."
+    },
+    {
+      "secao": "Escala de Avaliação (0 a 10)",
+      "texto": "Considere os últimos três meses ao avaliar cada comportamento: 0 = não demonstro | 5 = demonstro com alguma regularidade | 10 = demonstro de forma consistente."
+    },
+    {
+      "secao": "Liberação do Radar e Evolução",
+      "texto": "Ao concluir as 50 notas da aplicação atual, a Roda Integrada em Radar, a tabela comparativa de aplicações e variação em pontos, o perfil dos 50 comportamentos e o Plano de Ação ficam disponíveis imediatamente."
+    },
+    {
+      "secao": "Reaplicação Trimestral",
+      "texto": "A 1ª aplicação é a referência inicial. A cada nova aplicação (sugerida a cada 3 meses), a avaliação anterior permanece desenhada como sombreado ao fundo no radar e as 4 aplicações são comparadas lado a lado."
+    }
+  ]
+}

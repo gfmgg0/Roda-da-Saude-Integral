@@ -15,7 +15,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.database import engine, SessionLocal, get_db, Base
-from app.models import User, Turma, Assessment, AuditLog
+from app.models import User, Turma, Assessment, CompetenciaAssessment, AuditLog
 from app.auth import (
     hash_password,
     verify_password,
@@ -27,12 +27,19 @@ from app.calculations import (
     QUESTIONS,
     EIXOS,
     TUTORIAL,
+    COMP_QUESTIONS,
+    COMP_EIXOS,
+    COMP_TUTORIAL,
     compute_individual_results,
     compute_turma_report,
+    compute_competencias_results,
+    build_quatro_aplicacoes_table,
+    compute_competencias_turma_report,
 )
 from app.excel_service import (
     import_students_from_workbook,
     generate_filled_excel_bytes,
+    generate_filled_competencias_excel_bytes,
     DEFAULT_ALUNOS_PATH,
 )
 
@@ -216,6 +223,14 @@ class SaveQuestionnairePayload(BaseModel):
     data_avaliacao: Optional[str] = Field(default=None, max_length=40)
 
 
+class SaveCompetenciasPayload(BaseModel):
+    respostas: Dict[str, Dict[str, Any]]
+    cargo_area: Optional[str] = Field(default=None, max_length=255)
+    finalizar: bool = False
+    nova_avaliacao: bool = False
+    data_avaliacao: Optional[str] = Field(default=None, max_length=40)
+
+
 class SaveActionPlanPayload(BaseModel):
     plano_acao: Dict[str, Dict[str, Any]]
 
@@ -379,6 +394,128 @@ def build_assessment_payload(user: User, assessment: Optional[Assessment]) -> Di
         "questions": QUESTIONS,
         "eixos": EIXOS,
         "tutorial": TUTORIAL,
+        "resultados": resultados,
+    }
+
+
+def build_competencias_payload(
+    user: User, comp_assessment: Optional[CompetenciaAssessment]
+) -> Dict[str, Any]:
+    respostas_raw = {}
+    historico_raw = []
+    plano_acao_raw = {}
+    cargo_area = ""
+    concluido = False
+    now = datetime.now()
+    data_avaliacao = now.strftime("%d/%m/%Y")
+    completed_dt: Optional[datetime] = None
+
+    if comp_assessment:
+        cargo_area = comp_assessment.cargo_area or ""
+        try:
+            respostas_raw = json.loads(comp_assessment.respostas_json or "{}")
+        except Exception:
+            respostas_raw = {}
+        try:
+            historico_raw = json.loads(comp_assessment.historico_json or "[]")
+            if not isinstance(historico_raw, list):
+                historico_raw = []
+        except Exception:
+            historico_raw = []
+        try:
+            plano_acao_raw = json.loads(comp_assessment.plano_acao_json or "{}")
+            if not isinstance(plano_acao_raw, dict):
+                plano_acao_raw = {}
+        except Exception:
+            plano_acao_raw = {}
+
+        concluido = bool(comp_assessment.concluido)
+        if comp_assessment.data_avaliacao:
+            data_avaliacao = comp_assessment.data_avaliacao
+        completed_dt = comp_assessment.completed_at or _parse_date_br(comp_assessment.data_avaliacao)
+
+    resultados = compute_competencias_results(respostas_raw, concluido=concluido)
+
+    avaliacao_anterior = None
+    historico_resumo = []
+    for idx, h_entry in enumerate(historico_raw):
+        h_resp = h_entry.get("respostas", {})
+        h_date = h_entry.get("data_avaliacao") or "Aplicação anterior"
+        h_calc = compute_competencias_results(h_resp, concluido=True)
+        h_summary = {
+            "ordem": idx + 1,
+            "data_avaliacao": h_date,
+            "media_geral": h_calc["resumo"]["media_geral"],
+            "total_com_nota": h_calc["resumo"]["total_com_nota"],
+            "roda_radar": h_calc["roda_radar"],
+            "relatorio_dimensoes": h_calc["relatorio_dimensoes"],
+            "eletrovitae": h_calc["eletrovitae"],
+        }
+        historico_resumo.append(h_summary)
+
+    if historico_resumo:
+        avaliacao_anterior = historico_resumo[-1]
+
+    quatro_aplicacoes = build_quatro_aplicacoes_table(
+        historico_resumo=historico_resumo,
+        resultados_atual=resultados,
+        concluido_atual=concluido,
+        data_atual=data_avaliacao,
+    )
+
+    dias_desde_ultima = None
+    proxima_atualizacao_str = None
+    dias_para_proxima = None
+    alerta_trimestral = False
+
+    if concluido and completed_dt:
+        delta = now - completed_dt
+        dias_desde_ultima = max(0, delta.days)
+        prox_dt = completed_dt + timedelta(days=90)
+        proxima_atualizacao_str = prox_dt.strftime("%d/%m/%Y")
+        dias_para_proxima = (prox_dt - now).days
+        if dias_desde_ultima >= 90:
+            alerta_trimestral = True
+
+    datas_respostas = [
+        {
+            "tipo": "anterior",
+            "rotulo": f"{h['ordem']}ª Aplicação",
+            "data": h["data_avaliacao"],
+            "media_geral": h["media_geral"],
+        }
+        for h in historico_resumo
+    ]
+    if concluido:
+        datas_respostas.append({
+            "tipo": "atual",
+            "rotulo": f"Aplicação Atual ({len(historico_resumo) + 1}ª)",
+            "data": data_avaliacao,
+            "media_geral": resultados["resumo"]["media_geral"],
+        })
+
+    return {
+        "modulo": "competencias",
+        "user": serialize_user(user),
+        "cargo_area": cargo_area,
+        "data_avaliacao": data_avaliacao,
+        "concluido": concluido,
+        "respostas": respostas_raw,
+        "plano_acao": plano_acao_raw,
+        "avaliacao_anterior": avaliacao_anterior,
+        "historico_avaliacoes": historico_resumo,
+        "quatro_aplicacoes": quatro_aplicacoes,
+        "datas_respostas": datas_respostas,
+        "ciclo_trimestral": {
+            "alerta_trimestral": alerta_trimestral,
+            "dias_desde_ultima": dias_desde_ultima,
+            "dias_para_proxima": dias_para_proxima,
+            "proxima_atualizacao_data": proxima_atualizacao_str,
+            "ultima_avaliacao_data": data_avaliacao if concluido else None,
+        },
+        "questions": COMP_QUESTIONS,
+        "eixos": COMP_EIXOS,
+        "tutorial": COMP_TUTORIAL,
         "resultados": resultados,
     }
 
@@ -735,6 +872,240 @@ def export_personal_excel(
 
 
 # ---------------------------------------------------------------------------
+# Roda Integrada de Liderança e Competências Routes (Independent Module)
+# ---------------------------------------------------------------------------
+@app.get("/api/competencias")
+def get_competencias(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    comp_assessment = (
+        db.query(CompetenciaAssessment)
+        .filter(CompetenciaAssessment.user_id == current_user.id)
+        .first()
+    )
+    return build_competencias_payload(current_user, comp_assessment)
+
+
+@app.post("/api/competencias/save")
+def save_competencias(
+    payload: SaveCompetenciasPayload,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    cleaned_respostas: Dict[str, Dict[str, Any]] = {}
+    for q in COMP_QUESTIONS:
+        num_str = str(q["numero"])
+        item_in = payload.respostas.get(num_str, {}) if payload.respostas else {}
+        nota_val = item_in.get("nota")
+        sem_nota_val = item_in.get("sem_nota")
+
+        if nota_val is not None and str(nota_val).strip() != "":
+            try:
+                nota_int = int(float(nota_val))
+                cleaned_respostas[num_str] = {"nota": nota_int, "sem_nota": None}
+            except (ValueError, TypeError):
+                cleaned_respostas[num_str] = {"nota": nota_val, "sem_nota": None}
+        elif sem_nota_val and str(sem_nota_val).strip() != "":
+            cleaned_respostas[num_str] = {"nota": None, "sem_nota": str(sem_nota_val).strip()[:40]}
+
+    preview_results = compute_competencias_results(cleaned_respostas, concluido=payload.finalizar)
+
+    if payload.finalizar:
+        if preview_results["resumo"]["total_erros"] > 0:
+            raise HTTPException(
+                status_code=400,
+                detail="Existem notas inválidas. Na Roda de Competências, use notas inteiras de 0 a 10.",
+            )
+        if preview_results["resumo"]["total_respondidos"] < 50:
+            pendentes = preview_results["resumo"]["total_pendentes"]
+            raise HTTPException(
+                status_code=400,
+                detail=f"Ainda faltam {pendentes} comportamento(s) para avaliar. Preencha notas de 0 a 10 em todos os 50 comportamentos para liberar a Roda de Competências.",
+            )
+
+    now = datetime.now()
+    eval_date = payload.data_avaliacao or now.strftime("%d/%m/%Y %H:%M")
+    cargo_clean = (payload.cargo_area or "").strip()[:250] if payload.cargo_area is not None else None
+
+    comp = (
+        db.query(CompetenciaAssessment)
+        .filter(CompetenciaAssessment.user_id == current_user.id)
+        .first()
+    )
+
+    if not comp:
+        comp = CompetenciaAssessment(
+            user_id=current_user.id,
+            cargo_area=cargo_clean or "",
+            concluido=payload.finalizar,
+            respostas_json=json.dumps(cleaned_respostas, ensure_ascii=False),
+            historico_json="[]",
+            plano_acao_json="{}",
+            data_avaliacao=eval_date,
+            completed_at=now if payload.finalizar else None,
+        )
+        db.add(comp)
+    else:
+        if cargo_clean is not None:
+            comp.cargo_area = cargo_clean
+
+        if payload.finalizar and comp.concluido:
+            try:
+                old_respostas = json.loads(comp.respostas_json or "{}")
+            except Exception:
+                old_respostas = {}
+
+            if old_respostas and (old_respostas != cleaned_respostas or payload.nova_avaliacao):
+                try:
+                    hist_list = json.loads(comp.historico_json or "[]")
+                    if not isinstance(hist_list, list):
+                        hist_list = []
+                except Exception:
+                    hist_list = []
+
+                hist_list.append({
+                    "data_avaliacao": comp.data_avaliacao or now.strftime("%d/%m/%Y"),
+                    "completed_at_iso": comp.completed_at.isoformat() if comp.completed_at else None,
+                    "respostas": old_respostas,
+                })
+                comp.historico_json = json.dumps(hist_list[-10:], ensure_ascii=False)
+
+        comp.respostas_json = json.dumps(cleaned_respostas, ensure_ascii=False)
+        if payload.finalizar:
+            comp.concluido = True
+            comp.data_avaliacao = eval_date
+            comp.completed_at = now
+        elif not comp.concluido:
+            comp.data_avaliacao = eval_date
+        comp.updated_at = datetime.utcnow()
+
+    db.commit()
+    db.refresh(comp)
+
+    full_data = build_competencias_payload(current_user, comp)
+    has_prev = full_data["avaliacao_anterior"] is not None
+    msg = (
+        "Nova aplicação da Roda de Competências concluída! A aplicação anterior foi preservada como sombreado e na tabela de evolução das 4 aplicações."
+        if (payload.finalizar and has_prev)
+        else (
+            "Autoavaliação de Competências finalizada! A Roda Integrada, a tabela de evolução e o Plano de Ação já estão disponíveis."
+            if payload.finalizar
+            else "Progresso da Roda de Competências salvo com sucesso!"
+        )
+    )
+    full_data["message"] = msg
+    return full_data
+
+
+@app.post("/api/competencias/action-plan")
+def save_competencias_action_plan(
+    payload: SaveActionPlanPayload,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    comp = (
+        db.query(CompetenciaAssessment)
+        .filter(CompetenciaAssessment.user_id == current_user.id)
+        .first()
+    )
+    now_str = datetime.now().strftime("%d/%m/%Y %H:%M")
+
+    cleaned_plan: Dict[str, Dict[str, str]] = {}
+    for k, v in (payload.plano_acao or {}).items():
+        if not isinstance(v, dict):
+            continue
+        dim_key = str(k).strip()[:120]
+        objetivo = str(v.get("objetivo") or "").strip()[:1000]
+        acoes = str(v.get("acoes") or "").strip()[:2000]
+        meta_nota = str(v.get("meta_nota") or "").strip()[:40]
+        prazo = str(v.get("prazo") or "").strip()[:300]
+        status_p = str(v.get("status") or "Em andamento").strip()[:60]
+        if objetivo or acoes or meta_nota or prazo:
+            cleaned_plan[dim_key] = {
+                "objetivo": objetivo,
+                "acoes": acoes,
+                "meta_nota": meta_nota,
+                "prazo": prazo,
+                "status": status_p,
+                "updated_at": now_str,
+            }
+
+    if not comp:
+        comp = CompetenciaAssessment(
+            user_id=current_user.id,
+            cargo_area="",
+            concluido=False,
+            respostas_json="{}",
+            historico_json="[]",
+            plano_acao_json=json.dumps(cleaned_plan, ensure_ascii=False),
+            data_avaliacao=now_str,
+        )
+        db.add(comp)
+    else:
+        comp.plano_acao_json = json.dumps(cleaned_plan, ensure_ascii=False)
+        comp.updated_at = datetime.utcnow()
+
+    db.commit()
+    db.refresh(comp)
+    return {
+        "message": "Plano de Ação de Competências salvo com sucesso!",
+        "plano_acao": cleaned_plan,
+    }
+
+
+@app.get("/api/competencias/export-excel")
+def export_competencias_excel(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    comp = (
+        db.query(CompetenciaAssessment)
+        .filter(CompetenciaAssessment.user_id == current_user.id)
+        .first()
+    )
+    respostas_raw = {}
+    historico_raw = []
+    plano_acao_raw = {}
+    cargo_area = ""
+    data_avaliacao = datetime.now().strftime("%d/%m/%Y")
+
+    if comp:
+        cargo_area = comp.cargo_area or ""
+        try:
+            respostas_raw = json.loads(comp.respostas_json or "{}")
+        except Exception:
+            respostas_raw = {}
+        try:
+            historico_raw = json.loads(comp.historico_json or "[]")
+        except Exception:
+            historico_raw = []
+        try:
+            plano_acao_raw = json.loads(comp.plano_acao_json or "{}")
+        except Exception:
+            plano_acao_raw = {}
+        if comp.data_avaliacao:
+            data_avaliacao = comp.data_avaliacao
+
+    xlsx_bytes = generate_filled_competencias_excel_bytes(
+        nome_usuario=current_user.nome,
+        cargo_area=cargo_area,
+        data_avaliacao=data_avaliacao,
+        respostas_raw=respostas_raw,
+        historico_raw=historico_raw,
+        plano_acao_raw=plano_acao_raw,
+    )
+    safe_name = re.sub(r"[^a-zA-Z0-9_-]", "_", current_user.nome)[:40]
+    filename = f"Roda_Integrada_Lideranca_Competencias_{safe_name}.xlsx"
+
+    return StreamingResponse(
+        io.BytesIO(xlsx_bytes),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+# ---------------------------------------------------------------------------
 # Admin Routes: Upload Excel, Manage Turmas/Students, Reset, Delete, Reports
 # ---------------------------------------------------------------------------
 @app.post("/api/admin/upload-excel")
@@ -792,6 +1163,9 @@ def admin_list_turmas(
         concluidos = sum(
             1 for u in alunos_padrao if u.assessment and u.assessment.concluido
         )
+        comp_concluidos = sum(
+            1 for u in alunos_padrao if u.competencia_assessment and u.competencia_assessment.concluido
+        )
         out.append({
             "id": t.id,
             "cod_turma": t.cod_turma,
@@ -804,6 +1178,7 @@ def admin_list_turmas(
             "alunos_autorizados": autorizados,
             "alunos_pendentes": pendentes,
             "questionarios_concluidos": concluidos,
+            "competencias_concluidos": comp_concluidos,
         })
     return {"turmas": out}
 
@@ -844,6 +1219,7 @@ def admin_delete_turma(
 def admin_turma_report(
     turma_id: Optional[str] = Query(default="all"),
     apenas_concluidos: bool = Query(default=False),
+    modulo: Optional[str] = Query(default="saude"),
     admin_user: User = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
@@ -875,18 +1251,27 @@ def admin_turma_report(
     alunos = query.all()
     total_alunos_turma = len(alunos)
 
+    is_comp = (modulo or "saude").strip().lower() == "competencias"
     assessments_respostas = []
     for u in alunos:
-        if not u.assessment:
+        target_ass = u.competencia_assessment if is_comp else u.assessment
+        if not target_ass:
             continue
-        if apenas_concluidos and not u.assessment.concluido:
+        if apenas_concluidos and not target_ass.concluido:
             continue
         try:
-            resp = json.loads(u.assessment.respostas_json or "{}")
+            resp = json.loads(target_ass.respostas_json or "{}")
         except Exception:
             resp = {}
         if resp:
             assessments_respostas.append(resp)
+
+    if is_comp:
+        return compute_competencias_turma_report(
+            turma_info=turma_info,
+            total_alunos_turma=total_alunos_turma,
+            assessments_respostas=assessments_respostas,
+        )
 
     report = compute_turma_report(
         turma_info=turma_info,
@@ -926,6 +1311,23 @@ def admin_list_users(
             if u.assessment.concluido or tem_respostas:
                 data_resp = u.assessment.data_avaliacao
 
+        tem_respostas_comp = False
+        data_resp_comp = None
+        qtd_avaliacoes_comp = 0
+        if u.competencia_assessment:
+            try:
+                rc_dict = json.loads(u.competencia_assessment.respostas_json or "{}")
+                tem_respostas_comp = bool(rc_dict)
+            except Exception:
+                tem_respostas_comp = False
+            try:
+                hc_list = json.loads(u.competencia_assessment.historico_json or "[]")
+                qtd_avaliacoes_comp = len(hc_list) + (1 if u.competencia_assessment.concluido else 0)
+            except Exception:
+                qtd_avaliacoes_comp = 1 if u.competencia_assessment.concluido else 0
+            if u.competencia_assessment.concluido or tem_respostas_comp:
+                data_resp_comp = u.competencia_assessment.data_avaliacao
+
         out.append({
             "id": u.id,
             "nome": u.nome,
@@ -938,6 +1340,10 @@ def admin_list_users(
             "tem_respostas": tem_respostas,
             "data_ultima_resposta": data_resp,
             "qtd_avaliacoes": qtd_avaliacoes,
+            "competencias_concluido": bool(u.competencia_assessment and u.competencia_assessment.concluido),
+            "tem_respostas_competencias": tem_respostas_comp,
+            "data_ultima_competencia": data_resp_comp,
+            "qtd_avaliacoes_competencias": qtd_avaliacoes_comp,
             "turma": {
                 "id": u.turma.id,
                 "cod_turma": u.turma.cod_turma,
@@ -1051,9 +1457,30 @@ def admin_reset_user_assessment(
         db.delete(user.assessment)
         db.commit()
 
-    log_audit(db, "USER_ASSESSMENT_RESET", user.email, get_client_ip(request), "Respostas resetadas pelo admin")
+    log_audit(db, "USER_ASSESSMENT_RESET", user.email, get_client_ip(request), "Respostas de Saúde Integral resetadas pelo admin")
     return {
-        "message": f"As respostas, histórico de rodas e plano de ação de {user.nome} foram resetados com sucesso."
+        "message": f"As respostas, histórico e plano de ação da Roda da Saúde de {user.nome} foram resetados com sucesso."
+    }
+
+
+@app.post("/api/admin/users/{user_id}/reset-competencias")
+def admin_reset_user_competencias(
+    user_id: int,
+    request: Request,
+    admin_user: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    user = db.query(User).filter(User.id == user_id, User.role == "padrao").first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Aluno não encontrado.")
+
+    if user.competencia_assessment:
+        db.delete(user.competencia_assessment)
+        db.commit()
+
+    log_audit(db, "USER_COMPETENCIAS_RESET", user.email, get_client_ip(request), "Respostas de Competências resetadas pelo admin")
+    return {
+        "message": f"As respostas, histórico de 4 aplicações e plano de ação da Roda de Competências de {user.nome} foram resetados com sucesso."
     }
 
 

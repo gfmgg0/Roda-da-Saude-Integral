@@ -24,3 +24,4 @@ data/*.db-wal
 Thumbs.db
 .vscode/
 .idea/
+

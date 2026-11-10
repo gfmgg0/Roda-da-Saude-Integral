@@ -10,6 +10,7 @@ from app.auth import hash_password
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TEMPLATE_RODA_PATH = os.path.join(BASE_DIR, "assets", "template_roda_saude.xlsx")
+TEMPLATE_COMPETENCIAS_PATH = os.path.join(BASE_DIR, "assets", "template_roda_competencias.xlsx")
 DEFAULT_ALUNOS_PATH = os.path.join(BASE_DIR, "assets", "dados_alunos_padrao.xlsx")
 
 
@@ -193,3 +194,99 @@ def generate_filled_excel_bytes(nome_usuario: str, data_avaliacao: str, resposta
     wb.save(buf)
     buf.seek(0)
     return buf.read()
+
+
+def _parse_excel_date(date_str: Optional[str]):
+    if not date_str:
+        return datetime.now().date()
+    s = str(date_str).strip()
+    for fmt in ("%d/%m/%Y %H:%M", "%d/%m/%Y", "%Y-%m-%d"):
+        try:
+            return datetime.strptime(s, fmt).date()
+        except ValueError:
+            pass
+    return datetime.now().date()
+
+
+def generate_filled_competencias_excel_bytes(
+    nome_usuario: str,
+    cargo_area: Optional[str],
+    data_avaliacao: str,
+    respostas_raw: Dict[str, Any],
+    historico_raw: Optional[list] = None,
+    plano_acao_raw: Optional[Dict[str, Any]] = None,
+) -> bytes:
+    """
+    Loads the original Roda_Integrada_Lideranca_Competencias.xlsx template,
+    populates up to 4 applications (Columns D, E, F, G in 'Autoavaliação')
+    plus the Action Plan (rows 62+ in 'Autoavaliação'), keeping all formulas and charts intact.
+    """
+    wb = openpyxl.load_workbook(TEMPLATE_COMPETENCIAS_PATH)
+    ws_auto = wb["Autoavaliação"]
+
+    ws_auto["C2"] = _sanitize_text(nome_usuario, 150) or ""
+    ws_auto["C3"] = _sanitize_text(cargo_area, 150) or ""
+
+    all_apps = []
+    if isinstance(historico_raw, list):
+        for h in historico_raw:
+            if isinstance(h, dict) and h.get("respostas"):
+                all_apps.append({
+                    "data": h.get("data_avaliacao"),
+                    "respostas": h.get("respostas", {}),
+                })
+    if respostas_raw:
+        all_apps.append({
+            "data": data_avaliacao,
+            "respostas": respostas_raw,
+        })
+
+    if len(all_apps) > 4:
+        all_apps = [all_apps[0]] + all_apps[-3:]
+
+    # Columns D (4), E (5), F (6), G (7) in Autoavaliação
+    for app_idx, app_entry in enumerate(all_apps[:4]):
+        col_idx = 4 + app_idx
+        ws_auto.cell(2, col_idx).value = _parse_excel_date(app_entry.get("data"))
+        resp_dict = app_entry.get("respostas", {})
+        for num in range(1, 51):
+            row_idx = 5 + num  # Row 6 is Item 1, Row 55 is Item 50
+            ans = resp_dict.get(str(num), {}) if isinstance(resp_dict, dict) else {}
+            nota = ans.get("nota")
+            if nota is not None and str(nota).strip() != "":
+                try:
+                    ws_auto.cell(row_idx, col_idx).value = int(float(nota))
+                except (ValueError, TypeError):
+                    ws_auto.cell(row_idx, col_idx).value = None
+            else:
+                ws_auto.cell(row_idx, col_idx).value = None
+
+    # Populate Plano de Ação in Autoavaliação rows 62..71
+    if isinstance(plano_acao_raw, dict):
+        row_cursor = 62
+        for eixo_nome, plan_item in plano_acao_raw.items():
+            if not isinstance(plan_item, dict):
+                continue
+            acao_txt = _sanitize_text(plan_item.get("acoes") or plan_item.get("objetivo"), 300)
+            meta_txt = _sanitize_text(plan_item.get("meta_nota") or plan_item.get("objetivo"), 60)
+            prazo_txt = _sanitize_text(plan_item.get("prazo"), 80)
+            if not (acao_txt or meta_txt or prazo_txt):
+                continue
+            ws_auto.cell(row_cursor, 2).value = _sanitize_text(eixo_nome, 150)
+            ws_auto.cell(row_cursor, 3).value = acao_txt or ""
+            # Try numeric meta if possible (since D62:D64 has decimal validation 0..10)
+            if meta_txt:
+                try:
+                    ws_auto.cell(row_cursor, 4).value = float(str(meta_txt).replace(",", "."))
+                except ValueError:
+                    ws_auto.cell(row_cursor, 4).value = meta_txt
+            ws_auto.cell(row_cursor, 5).value = prazo_txt or ""
+            row_cursor += 1
+            if row_cursor > 71:
+                break
+
+    buf = io.BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+    return buf.read()
+

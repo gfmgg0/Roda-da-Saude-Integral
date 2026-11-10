@@ -36,6 +36,12 @@ class User(Base):
 
     turma = relationship("Turma", back_populates="alunos")
     assessment = relationship("Assessment", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    competencia_assessment = relationship(
+        "CompetenciaAssessment",
+        back_populates="user",
+        uselist=False,
+        cascade="all, delete-orphan",
+    )
 
 
 class Assessment(Base):
@@ -52,6 +58,23 @@ class Assessment(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     user = relationship("User", back_populates="assessment")
+
+
+class CompetenciaAssessment(Base):
+    __tablename__ = "competencia_assessments"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False)
+    cargo_area = Column(String(255), nullable=True)
+    concluido = Column(Boolean, default=False, nullable=False)
+    respostas_json = Column(Text, default="{}", nullable=False)
+    historico_json = Column(Text, default="[]", nullable=False)
+    plano_acao_json = Column(Text, default="{}", nullable=False)
+    data_avaliacao = Column(String(40), nullable=True)
+    completed_at = Column(DateTime, nullable=True)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    user = relationship("User", back_populates="competencia_assessment")
 
 
 class AuditLog(Base):
