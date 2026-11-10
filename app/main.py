@@ -50,9 +50,9 @@ os.makedirs(STATIC_DIR, exist_ok=True)
 ENABLE_DOCS = os.getenv("ENABLE_DOCS", "false").lower() == "true"
 
 app = FastAPI(
-    title="Roda da Saúde Integral - Profa. Sheila Ricoy",
-    description="Aplicação Web de Autopercepção em 10 Dimensões, Roda da Saúde, Relatório de Notas, Eletrovitae e Plano de Ação.",
-    version="1.1.0",
+    title="Eixo Humano - Autoconhecimento para o Líder 4.0",
+    description="Plataforma Eixo Humano — Autoconhecimento para o Líder 4.0 (Roda da Saúde Integral & Roda de Liderança e Competências).",
+    version="1.2.0",
     docs_url="/docs" if ENABLE_DOCS else None,
     redoc_url="/redoc" if ENABLE_DOCS else None,
     openapi_url="/openapi.json" if ENABLE_DOCS else None,

@@ -377,9 +377,10 @@ function renderLoginScreen() {
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 3v18m9-9H3m15.364 6.364l-12.728-12.728M18.364 5.636L5.636 18.364"></path>
             </svg>
           </div>
-          <h1 class="text-2xl font-extrabold tracking-tight">Roda da Saúde Integral</h1>
-          <p class="text-xs text-slate-200 mt-1 font-medium">Autoria: Profa. Sheila Ricoy em parceria com I.A.</p>
-          <p class="text-[11px] text-amberref-light mt-1">Autopercepção em 10 Dimensões • Roda da Saúde • Eletrovitae • Plano de Ação</p>
+          <h1 class="text-2xl font-extrabold tracking-tight">Eixo Humano</h1>
+          <p class="text-sm text-amberref-light font-bold mt-0.5">Autoconhecimento para o Líder 4.0</p>
+          <p class="text-xs text-slate-200 mt-1.5 font-medium">Autoria: Profa. Sheila Ricoy em parceria com I.A.</p>
+          <p class="text-[11px] text-slate-300 mt-0.5">Roda da Saúde Integral • Roda de Liderança e Competências • Eletrovitae • Plano de Ação</p>
         </div>
 
         <div class="grid grid-cols-2 border-b border-slate-200 bg-slate-50 text-sm font-semibold">
@@ -495,7 +496,7 @@ function renderLoginScreen() {
         </div>
       </div>
       <p class="text-xs text-white/70 mt-6 text-center">
-        Roda da Saúde Integral • Avaliação Individual e Confidencial • Versão Web
+        Eixo Humano • Autoconhecimento para o Líder 4.0 • Avaliação Individual e Confidencial
       </p>
     </div>
   `;
@@ -701,11 +702,14 @@ function renderNavbar() {
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <div class="flex items-center gap-3 flex-wrap">
-              <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight">${escapeHtml(moduleTitle)}</h1>
+              <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight">Eixo Humano</h1>
+              <span class="px-2.5 py-0.5 rounded-lg bg-white/10 text-amberref-light text-xs sm:text-sm font-bold border border-white/15">
+                Autoconhecimento para o Líder 4.0
+              </span>
               ${turmaBadge}
             </div>
             <p class="text-xs text-slate-300 mt-1">
-              Autoria: Sheila Ricoy em parceria com I.A. • Usuário(a): <strong class="text-white">${escapeHtml(state.user.nome)}</strong> (${escapeHtml(state.user.email)})
+              Módulo ativo: <strong class="text-amberref-light">${escapeHtml(moduleTitle)}</strong> • Autoria: Sheila Ricoy em parceria com I.A. • Usuário(a): <strong class="text-white">${escapeHtml(state.user.nome)}</strong> (${escapeHtml(state.user.email)})
             </p>
           </div>
           <div class="flex items-center gap-2.5 self-start md:self-auto">
@@ -864,8 +868,8 @@ function renderFooter() {
   return `
     <footer class="bg-white border-t border-slate-200 mt-12 py-5 text-center text-xs text-slate-500 no-print">
       <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-        <span><strong>Roda da Saúde Integral & Roda de Liderança e Competências</strong> — Profa. Sheila Ricoy</span>
-        <span>Ciclo de autopercepção trimestral (3 meses) • Dados individuais confidenciais</span>
+        <span><strong>Eixo Humano — Autoconhecimento para o Líder 4.0</strong> • Profa. Sheila Ricoy</span>
+        <span>Roda da Saúde Integral & Roda de Liderança e Competências • Dados individuais confidenciais</span>
       </div>
     </footer>
   `;
@@ -969,7 +973,7 @@ function renderQuestionnaireView() {
               ${
                 isComp
                   ? 'Considere os últimos três meses. 0 = não demonstro. 5 = demonstro com alguma regularidade. 10 = demonstro de forma consistente.'
-                  : 'Considere os últimos três meses. Dê uma nota de 1 a 10 conforme sua satisfação com cada aspecto no período.'
+                  : 'Dê uma nota de 1 a 10 conforme sua satisfação com cada aspecto avaliado.'
               }
             </h2>
             <p class="text-xs text-slate-600 mt-1">

@@ -4,7 +4,7 @@
       "numero": 1,
       "dimensao": "Saúde Espiritual",
       "item": "Conexão espiritual",
-      "pergunta": "Nos últimos três meses, como você avalia sua conexão espiritual?",
+      "pergunta": "Como você avalia sua conexão espiritual?",
       "exemplo": "Perceber um vínculo com o que você considera sagrado ou com sua fonte pessoal de espiritualidade.",
       "revisao": "Validado"
     },
@@ -12,7 +12,7 @@
       "numero": 2,
       "dimensao": "Saúde Espiritual",
       "item": "Sentido de vida",
-      "pergunta": "Nos últimos três meses, como você avalia o sentido que você percebe na sua vida?",
+      "pergunta": "Como você avalia o sentido que você percebe na sua vida?",
       "exemplo": "Perceber significado na sua existência e nas experiências que vive.",
       "revisao": "Validado"
     },
@@ -20,7 +20,7 @@
       "numero": 3,
       "dimensao": "Saúde Espiritual",
       "item": "Coerência com valores",
-      "pergunta": "Nos últimos três meses, como você avalia a coerência entre suas escolhas e seus valores?",
+      "pergunta": "Como você avalia a coerência entre suas escolhas e seus valores?",
       "exemplo": "Fazer escolhas no dia a dia que estejam de acordo com aquilo em que você acredita.",
       "revisao": "Validado"
     },
@@ -28,7 +28,7 @@
       "numero": 4,
       "dimensao": "Saúde Espiritual",
       "item": "Esperança",
-      "pergunta": "Nos últimos três meses, como você avalia sua esperança em relação ao futuro?",
+      "pergunta": "Como você avalia sua esperança em relação ao futuro?",
       "exemplo": "Conseguir enxergar possibilidades para o futuro, mesmo quando o momento é difícil.",
       "revisao": "Validado"
     },
@@ -36,7 +36,7 @@
       "numero": 5,
       "dimensao": "Saúde Espiritual",
       "item": "Gratidão",
-      "pergunta": "Nos últimos três meses, como você avalia sua capacidade de reconhecer o que há de bom na sua vida?",
+      "pergunta": "Como você avalia sua capacidade de reconhecer o que há de bom na sua vida?",
       "exemplo": "Reconhecer pessoas, experiências ou acontecimentos que você valoriza, sem desconsiderar suas dificuldades.",
       "revisao": "Validado"
     },
@@ -44,7 +44,7 @@
       "numero": 6,
       "dimensao": "Saúde Contemplativa",
       "item": "Atenção ao momento",
-      "pergunta": "Nos últimos três meses, como você avalia sua capacidade de prestar atenção ao que está vivendo?",
+      "pergunta": "Como você avalia sua capacidade de prestar atenção ao que está vivendo?",
       "exemplo": "Prestar atenção a uma conversa, uma caminhada ou uma refeição enquanto ela acontece.",
       "revisao": "Em revisão"
     },
@@ -52,7 +52,7 @@
       "numero": 7,
       "dimensao": "Saúde Contemplativa",
       "item": "Pausas na rotina",
-      "pergunta": "Nos últimos três meses, como você avalia o espaço que você tem para fazer pausas na rotina?",
+      "pergunta": "Como você avalia o espaço que você tem para fazer pausas na rotina?",
       "exemplo": "Ter oportunidades de interromper as demandas por alguns momentos, conforme sua realidade.",
       "revisao": "Em revisão"
     },
@@ -60,7 +60,7 @@
       "numero": 8,
       "dimensao": "Saúde Contemplativa",
       "item": "Reflexão sobre a vida",
-      "pergunta": "Nos últimos três meses, como você avalia o espaço que você tem para pensar sobre a própria vida?",
+      "pergunta": "Como você avalia o espaço que você tem para pensar sobre a própria vida?",
       "exemplo": "Pensar sobre o que você viveu, como se sentiu e o que aprendeu com uma experiência.",
       "revisao": "Em revisão"
     },
@@ -68,7 +68,7 @@
       "numero": 9,
       "dimensao": "Saúde Contemplativa",
       "item": "Apreciar sem pressa",
-      "pergunta": "Nos últimos três meses, como você avalia seus momentos de apreciar coisas simples sem pressa?",
+      "pergunta": "Como você avalia seus momentos de apreciar coisas simples sem pressa?",
       "exemplo": "Observar uma paisagem, ouvir uma música com atenção ou saborear uma refeição.",
       "revisao": "Em revisão"
     },
@@ -76,7 +76,7 @@
       "numero": 10,
       "dimensao": "Saúde Contemplativa",
       "item": "Contato com a natureza",
-      "pergunta": "Nos últimos três meses, como você avalia seu contato com a natureza?",
+      "pergunta": "Como você avalia seu contato com a natureza?",
       "exemplo": "Ter contato com plantas, um jardim, uma praça, um parque ou outro ambiente natural acessível a você.",
       "revisao": "Em revisão"
     },
@@ -84,7 +84,7 @@
       "numero": 11,
       "dimensao": "Saúde Intelectual",
       "item": "Aprendizado",
-      "pergunta": "Nos últimos três meses, como você avalia seu aprendizado de coisas novas?",
+      "pergunta": "Como você avalia seu aprendizado de coisas novas?",
       "exemplo": "Aprender algo por meio de conversas, leituras, cursos ou experiências do dia a dia.",
       "revisao": "Em revisão"
     },
@@ -92,7 +92,7 @@
       "numero": 12,
       "dimensao": "Saúde Intelectual",
       "item": "Concentração",
-      "pergunta": "Nos últimos três meses, como você avalia sua capacidade de manter o foco nas tarefas que escolhe fazer?",
+      "pergunta": "Como você avalia sua capacidade de manter o foco nas tarefas que escolhe fazer?",
       "exemplo": "Conseguir acompanhar uma leitura, uma aula ou uma atividade pelo tempo necessário.",
       "revisao": "Em revisão"
     },
@@ -100,7 +100,7 @@
       "numero": 13,
       "dimensao": "Saúde Intelectual",
       "item": "Análise de informações",
-      "pergunta": "Nos últimos três meses, como você avalia sua capacidade de analisar informações antes de formar uma opinião?",
+      "pergunta": "Como você avalia sua capacidade de analisar informações antes de formar uma opinião?",
       "exemplo": "Conferir uma informação, comparar explicações ou considerar outro ponto de vista.",
       "revisao": "Em revisão"
     },
@@ -108,7 +108,7 @@
       "numero": 14,
       "dimensao": "Saúde Intelectual",
       "item": "Criatividade",
-      "pergunta": "Nos últimos três meses, como você avalia sua facilidade para criar ideias ou soluções?",
+      "pergunta": "Como você avalia sua facilidade para criar ideias ou soluções?",
       "exemplo": "Encontrar uma maneira diferente de resolver um problema, organizar algo ou se expressar.",
       "revisao": "Em revisão"
     },
@@ -116,7 +116,7 @@
       "numero": 15,
       "dimensao": "Saúde Intelectual",
       "item": "Aplicação do aprendizado",
-      "pergunta": "Nos últimos três meses, como você avalia sua capacidade de usar no dia a dia aquilo que aprende?",
+      "pergunta": "Como você avalia sua capacidade de usar no dia a dia aquilo que aprende?",
       "exemplo": "Colocar em prática um conhecimento que você considerou útil.",
       "revisao": "Em revisão"
     },
@@ -124,7 +124,7 @@
       "numero": 16,
       "dimensao": "Saúde Emocional",
       "item": "Reconhecimento emocional",
-      "pergunta": "Nos últimos três meses, como você avalia sua capacidade de reconhecer o que sente?",
+      "pergunta": "Como você avalia sua capacidade de reconhecer o que sente?",
       "exemplo": "Perceber e nomear emoções como alegria, tristeza, medo ou frustração.",
       "revisao": "Em revisão"
     },
@@ -132,7 +132,7 @@
       "numero": 17,
       "dimensao": "Saúde Emocional",
       "item": "Regulação emocional",
-      "pergunta": "Nos últimos três meses, como você avalia sua capacidade de lidar com emoções intensas?",
+      "pergunta": "Como você avalia sua capacidade de lidar com emoções intensas?",
       "exemplo": "Encontrar formas de atravessar uma emoção intensa e escolher como agir.",
       "revisao": "Em revisão"
     },
@@ -140,7 +140,7 @@
       "numero": 18,
       "dimensao": "Saúde Emocional",
       "item": "Autoestima",
-      "pergunta": "Nos últimos três meses, como você avalia o apreço que você sente por si?",
+      "pergunta": "Como você avalia o apreço que você sente por si?",
       "exemplo": "Reconhecer o próprio valor e tratar a si com respeito, inclusive ao cometer erros.",
       "revisao": "Em revisão"
     },
@@ -148,7 +148,7 @@
       "numero": 19,
       "dimensao": "Saúde Emocional",
       "item": "Expressão emocional",
-      "pergunta": "Nos últimos três meses, como você avalia sua capacidade de expressar o que sente?",
+      "pergunta": "Como você avalia sua capacidade de expressar o que sente?",
       "exemplo": "Conseguir comunicar o que sente de uma forma que faça sentido para você.",
       "revisao": "Em revisão"
     },
@@ -156,7 +156,7 @@
       "numero": 20,
       "dimensao": "Saúde Emocional",
       "item": "Recuperação emocional",
-      "pergunta": "Nos últimos três meses, como você avalia sua capacidade de se recuperar emocionalmente após dificuldades?",
+      "pergunta": "Como você avalia sua capacidade de se recuperar emocionalmente após dificuldades?",
       "exemplo": "Retomar gradualmente o equilíbrio emocional depois de uma situação difícil.",
       "revisao": "Em revisão"
     },
@@ -164,7 +164,7 @@
       "numero": 21,
       "dimensao": "Saúde Física",
       "item": "Disposição física",
-      "pergunta": "Nos últimos três meses, como você avalia sua disposição física para as atividades do dia a dia?",
+      "pergunta": "Como você avalia sua disposição física para as atividades do dia a dia?",
       "exemplo": "Ter disposição para as atividades do seu cotidiano, considerando suas condições e possibilidades.",
       "revisao": "Em revisão"
     },
@@ -172,7 +172,7 @@
       "numero": 22,
       "dimensao": "Saúde Física",
       "item": "Alimentação",
-      "pergunta": "Nos últimos três meses, como você avalia a adequação da sua alimentação às suas necessidades?",
+      "pergunta": "Como você avalia a adequação da sua alimentação às suas necessidades?",
       "exemplo": "Perceber que sua alimentação atende às suas necessidades e à sua realidade.",
       "revisao": "Em revisão"
     },
@@ -180,7 +180,7 @@
       "numero": 23,
       "dimensao": "Saúde Física",
       "item": "Movimento",
-      "pergunta": "Nos últimos três meses, como você avalia a adequação do movimento corporal às suas possibilidades?",
+      "pergunta": "Como você avalia a adequação do movimento corporal às suas possibilidades?",
       "exemplo": "Encontrar formas de movimento adequadas às suas possibilidades, nos deslocamentos, em atividades ou na rotina.",
       "revisao": "Em revisão"
     },
@@ -188,7 +188,7 @@
       "numero": 24,
       "dimensao": "Saúde Física",
       "item": "Sono",
-      "pergunta": "Nos últimos três meses, como você avalia a qualidade do seu sono?",
+      "pergunta": "Como você avalia a qualidade do seu sono?",
       "exemplo": "Perceber se o sono tem sido satisfatório e se você acorda com a sensação de ter descansado.",
       "revisao": "Em revisão"
     },
@@ -196,7 +196,7 @@
       "numero": 25,
       "dimensao": "Saúde Física",
       "item": "Cuidados com a saúde",
-      "pergunta": "Nos últimos três meses, como você avalia o cuidado que você conseguiu dedicar à sua saúde?",
+      "pergunta": "Como você avalia o cuidado que você conseguiu dedicar à sua saúde?",
       "exemplo": "Conseguir realizar os cuidados de que necessita, como acompanhamento profissional ou cuidados orientados para sua situação.",
       "revisao": "Em revisão"
     },
@@ -204,7 +204,7 @@
       "numero": 26,
       "dimensao": "Saúde Relacional",
       "item": "Vínculos próximos",
-      "pergunta": "Nos últimos três meses, como você avalia a qualidade dos seus vínculos mais próximos?",
+      "pergunta": "Como você avalia a qualidade dos seus vínculos mais próximos?",
       "exemplo": "Sentir confiança e proximidade nas relações importantes para você, sejam familiares, amizades ou outros vínculos.",
       "revisao": "Em revisão"
     },
@@ -212,7 +212,7 @@
       "numero": 27,
       "dimensao": "Saúde Relacional",
       "item": "Rede de apoio",
-      "pergunta": "Nos últimos três meses, como você avalia o apoio com que você pode contar quando precisa?",
+      "pergunta": "Como você avalia o apoio com que você pode contar quando precisa?",
       "exemplo": "Ter alguém ou algum recurso de apoio a que você possa recorrer quando precisa.",
       "revisao": "Em revisão"
     },
@@ -220,7 +220,7 @@
       "numero": 28,
       "dimensao": "Saúde Relacional",
       "item": "Comunicação",
-      "pergunta": "Nos últimos três meses, como você avalia a forma como você se comunica nas suas relações?",
+      "pergunta": "Como você avalia a forma como você se comunica nas suas relações?",
       "exemplo": "Conseguir conversar, escutar e expressar suas necessidades nas relações.",
       "revisao": "Em revisão"
     },
@@ -228,7 +228,7 @@
       "numero": 29,
       "dimensao": "Saúde Relacional",
       "item": "Limites nas relações",
-      "pergunta": "Nos últimos três meses, como você avalia o respeito aos seus limites nas relações?",
+      "pergunta": "Como você avalia o respeito aos seus limites nas relações?",
       "exemplo": "Perceber se suas necessidades e seus limites são respeitados pelas pessoas com quem convive.",
       "revisao": "Em revisão"
     },
@@ -236,7 +236,7 @@
       "numero": 30,
       "dimensao": "Saúde Relacional",
       "item": "Vida afetiva",
-      "pergunta": "Nos últimos três meses, como você avalia sua vida afetiva, conforme deseja vivê-la?",
+      "pergunta": "Como você avalia sua vida afetiva, conforme deseja vivê-la?",
       "exemplo": "Avaliar sua vida afetiva conforme seus desejos e escolhas, estando ou não em um relacionamento.",
       "revisao": "Em revisão"
     },
@@ -244,7 +244,7 @@
       "numero": 31,
       "dimensao": "Saúde Financeira",
       "item": "Necessidades básicas",
-      "pergunta": "Nos últimos três meses, como você avalia os recursos disponíveis para suas necessidades básicas?",
+      "pergunta": "Como você avalia os recursos disponíveis para suas necessidades básicas?",
       "exemplo": "Dispor de recursos para necessidades como alimentação, moradia e outras despesas essenciais à sua realidade.",
       "revisao": "Em revisão"
     },
@@ -252,7 +252,7 @@
       "numero": 32,
       "dimensao": "Saúde Financeira",
       "item": "Organização financeira",
-      "pergunta": "Nos últimos três meses, como você avalia a organização das suas finanças?",
+      "pergunta": "Como você avalia a organização das suas finanças?",
       "exemplo": "Saber quais são suas receitas, despesas e compromissos financeiros.",
       "revisao": "Em revisão"
     },
@@ -260,7 +260,7 @@
       "numero": 33,
       "dimensao": "Saúde Financeira",
       "item": "Equilíbrio financeiro",
-      "pergunta": "Nos últimos três meses, como você avalia o equilíbrio entre o que você recebe e o que precisa pagar?",
+      "pergunta": "Como você avalia o equilíbrio entre o que você recebe e o que precisa pagar?",
       "exemplo": "Perceber como suas entradas de dinheiro se relacionam com os pagamentos que precisa fazer.",
       "revisao": "Em revisão"
     },
@@ -268,7 +268,7 @@
       "numero": 34,
       "dimensao": "Saúde Financeira",
       "item": "Proteção para imprevistos",
-      "pergunta": "Nos últimos três meses, como você avalia sua preparação financeira para imprevistos?",
+      "pergunta": "Como você avalia sua preparação financeira para imprevistos?",
       "exemplo": "Ter recursos ou alternativas de apoio para lidar com uma despesa inesperada.",
       "revisao": "Em revisão"
     },
@@ -276,7 +276,7 @@
       "numero": 35,
       "dimensao": "Saúde Financeira",
       "item": "Planejamento financeiro",
-      "pergunta": "Nos últimos três meses, como você avalia seu planejamento financeiro para o futuro?",
+      "pergunta": "Como você avalia seu planejamento financeiro para o futuro?",
       "exemplo": "Ter uma direção para seus objetivos financeiros futuros, conforme suas condições.",
       "revisao": "Em revisão"
     },
@@ -284,7 +284,7 @@
       "numero": 36,
       "dimensao": "Saúde Profissional",
       "item": "Realização",
-      "pergunta": "Nos últimos três meses, como você avalia a realização que sua atividade principal proporciona?",
+      "pergunta": "Como você avalia a realização que sua atividade principal proporciona?",
       "exemplo": "Sentir satisfação com seu trabalho, seus estudos, os cuidados que realiza ou outra atividade principal.",
       "revisao": "Em revisão"
     },
@@ -292,7 +292,7 @@
       "numero": 37,
       "dimensao": "Saúde Profissional",
       "item": "Direção",
-      "pergunta": "Nos últimos três meses, como você avalia a clareza dos próximos passos na sua atividade principal?",
+      "pergunta": "Como você avalia a clareza dos próximos passos na sua atividade principal?",
       "exemplo": "Saber quais próximos passos deseja dar na sua atividade principal.",
       "revisao": "Em revisão"
     },
@@ -300,7 +300,7 @@
       "numero": 38,
       "dimensao": "Saúde Profissional",
       "item": "Desenvolvimento",
-      "pergunta": "Nos últimos três meses, como você avalia seu desenvolvimento para exercer sua atividade principal?",
+      "pergunta": "Como você avalia seu desenvolvimento para exercer sua atividade principal?",
       "exemplo": "Desenvolver conhecimentos ou habilidades úteis à atividade que exerce.",
       "revisao": "Em revisão"
     },
@@ -308,7 +308,7 @@
       "numero": 39,
       "dimensao": "Saúde Profissional",
       "item": "Inovação",
-      "pergunta": "Nos últimos três meses, como você avalia sua capacidade de melhorar a forma como realiza suas atividades?",
+      "pergunta": "Como você avalia sua capacidade de melhorar a forma como realiza suas atividades?",
       "exemplo": "Encontrar melhorias na forma de realizar uma tarefa, prestar um serviço ou conduzir uma atividade.",
       "revisao": "Em revisão"
     },
@@ -316,7 +316,7 @@
       "numero": 40,
       "dimensao": "Saúde Profissional",
       "item": "Iniciativa",
-      "pergunta": "Nos últimos três meses, como você avalia sua iniciativa para transformar ideias em ações?",
+      "pergunta": "Como você avalia sua iniciativa para transformar ideias em ações?",
       "exemplo": "Dar um primeiro passo para colocar uma ideia em prática. Isso não exige ter uma empresa.",
       "revisao": "Em revisão"
     },
@@ -324,7 +324,7 @@
       "numero": 41,
       "dimensao": "Saúde Temporal",
       "item": "Prioridades",
-      "pergunta": "Nos últimos três meses, como você avalia a clareza das suas prioridades?",
+      "pergunta": "Como você avalia a clareza das suas prioridades?",
       "exemplo": "Conseguir identificar o que merece sua atenção neste momento da vida.",
       "revisao": "Em revisão"
     },
@@ -332,7 +332,7 @@
       "numero": 42,
       "dimensao": "Saúde Temporal",
       "item": "Organização do tempo",
-      "pergunta": "Nos últimos três meses, como você avalia a organização do seu tempo?",
+      "pergunta": "Como você avalia a organização do seu tempo?",
       "exemplo": "Organizar compromissos e atividades de um modo que funcione para você.",
       "revisao": "Em revisão"
     },
@@ -340,7 +340,7 @@
       "numero": 43,
       "dimensao": "Saúde Temporal",
       "item": "Ritmo sustentável",
-      "pergunta": "Nos últimos três meses, como você avalia a adequação do seu ritmo diário aos seus limites?",
+      "pergunta": "Como você avalia a adequação do seu ritmo diário aos seus limites?",
       "exemplo": "Perceber se o ritmo do cotidiano é compatível com seus limites e suas necessidades.",
       "revisao": "Em revisão"
     },
@@ -348,7 +348,7 @@
       "numero": 44,
       "dimensao": "Saúde Temporal",
       "item": "Equilíbrio entre áreas",
-      "pergunta": "Nos últimos três meses, como você avalia a distribuição do seu tempo entre as áreas da vida?",
+      "pergunta": "Como você avalia a distribuição do seu tempo entre as áreas da vida?",
       "exemplo": "Ter uma distribuição do tempo satisfatória entre compromissos, vínculos, cuidados e interesses pessoais.",
       "revisao": "Em revisão"
     },
@@ -356,7 +356,7 @@
       "numero": 45,
       "dimensao": "Saúde Temporal",
       "item": "Uso digital",
-      "pergunta": "Nos últimos três meses, como você avalia o espaço que telas e atividades digitais ocupam na sua rotina?",
+      "pergunta": "Como você avalia o espaço que telas e atividades digitais ocupam na sua rotina?",
       "exemplo": "Avaliar como trabalho digital, redes sociais, mensagens e entretenimento em telas ocupam seu tempo.",
       "revisao": "Em revisão"
     },
@@ -364,7 +364,7 @@
       "numero": 46,
       "dimensao": "Saúde Ambiental",
       "item": "Ambiente de vida",
-      "pergunta": "Nos últimos três meses, como você avalia as condições do ambiente em que você vive?",
+      "pergunta": "Como você avalia as condições do ambiente em que você vive?",
       "exemplo": "Perceber as condições de conforto e habitabilidade dos espaços em que vive.",
       "revisao": "Em revisão"
     },
@@ -372,7 +372,7 @@
       "numero": 47,
       "dimensao": "Saúde Ambiental",
       "item": "Segurança",
-      "pergunta": "Nos últimos três meses, como você avalia sua sensação de segurança no dia a dia?",
+      "pergunta": "Como você avalia sua sensação de segurança no dia a dia?",
       "exemplo": "Sentir segurança nos ambientes e nos deslocamentos que fazem parte do seu cotidiano.",
       "revisao": "Em revisão"
     },
@@ -380,7 +380,7 @@
       "numero": 48,
       "dimensao": "Saúde Ambiental",
       "item": "Acesso a serviços",
-      "pergunta": "Nos últimos três meses, como você avalia seu acesso aos serviços de que precisa?",
+      "pergunta": "Como você avalia seu acesso aos serviços de que precisa?",
       "exemplo": "Conseguir acessar os serviços de que precisa, como saúde, educação, transporte ou outros recursos locais.",
       "revisao": "Em revisão"
     },
@@ -388,7 +388,7 @@
       "numero": 49,
       "dimensao": "Saúde Ambiental",
       "item": "Responsabilidade ambiental",
-      "pergunta": "Nos últimos três meses, como você avalia o cuidado ambiental presente nos seus hábitos de consumo?",
+      "pergunta": "Como você avalia o cuidado ambiental presente nos seus hábitos de consumo?",
       "exemplo": "Considerar o cuidado com o ambiente nas escolhas de consumo, conforme as possibilidades disponíveis.",
       "revisao": "Em revisão"
     },
@@ -396,7 +396,7 @@
       "numero": 50,
       "dimensao": "Saúde Ambiental",
       "item": "Contribuição coletiva",
-      "pergunta": "Nos últimos três meses, como você avalia sua participação em algo que beneficia outras pessoas?",
+      "pergunta": "Como você avalia sua participação em algo que beneficia outras pessoas?",
       "exemplo": "Contribuir de alguma forma para outras pessoas ou para a comunidade, inclusive por pequenos gestos cotidianos.",
       "revisao": "Em revisão"
     }

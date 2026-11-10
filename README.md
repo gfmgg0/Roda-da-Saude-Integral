@@ -1,4 +1,4 @@
-# Roda da Saúde Integral & Roda de Liderança e Competências — Profa. Sheila Ricoy
+# Eixo Humano — Autoconhecimento para o Líder 4.0
 
 Aplicação web integrada com dois módulos independentes de autopercepção e acompanhamento longitudinal (**Roda da Saúde Integral** e **Roda Integrada de Liderança e Competências**), cada um com 10 eixos e 50 itens, desenvolvida com **FastAPI**, **SQLAlchemy**, **Chart.js** e **OpenPyXL**.
 
